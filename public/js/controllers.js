@@ -98,4 +98,7 @@ function AppCtrl($scope, socket) {
     $scope.message = '';
   };
 
+  $scope.togglePopup = function() {
+    $(".overlay, .popup").fadeToggle(100);
+  };
 }
