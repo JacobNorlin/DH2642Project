@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-function AppCtrl($scope, socket) {
+app.controller('AppCtrl', function ($scope, socket) {
 
   // Socket listeners
   // ================
@@ -101,4 +101,5 @@ function AppCtrl($scope, socket) {
   $scope.togglePopup = function() {
     $(".overlay, .popup").fadeToggle(100);
   };
-}
+
+});
