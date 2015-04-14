@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html ng-app="myApp">
 	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
 		<title></title>
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
@@ -75,10 +77,16 @@
 						<!-- Panel content -->
 
 						<table class="table">
-							<tr ng-repeat="user in users">
-								<td class="vert-align">{{user}}</td>
+							<tr>
+								<td class="vert-align"><a href="#" id="username">{{name}}</a></td>
 								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"> &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a></td>
 							</tr>
+
+							<tr ng-repeat="user in users" ng-if="user != name">
+								<td class="vert-align">{{user}}</td>
+								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"></td>
+							</tr>
+
 						</table>
 
 					</div>
