@@ -72,7 +72,7 @@ function AppCtrl($scope, socket) {
       if (!result) {
         alert('There was an error changing your name');
       } else {
-        
+
         changeName($scope.name, $scope.newName);
 
         $scope.name = $scope.newName;
@@ -97,4 +97,5 @@ function AppCtrl($scope, socket) {
     // clear message box
     $scope.message = '';
   };
+
 }
