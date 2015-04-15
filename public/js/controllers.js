@@ -95,7 +95,10 @@ app.controller('AppCtrl', function ($scope, socket) {
 	$scope.sendMessage = function () {
 		if ($scope.message.length == 0)
 			return;
-
+		else if($scope.message.length > 230)
+		{
+			$scope.message = $scope.message.substr(0,230);
+		}
 		socket.emit('send:message', {
 			message: $scope.message
 		});
