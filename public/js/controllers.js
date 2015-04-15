@@ -4,6 +4,8 @@
 
 app.controller('AppCtrl', function ($scope, socket) {
 
+  var chat = $("#chat");
+
   // Socket listeners
   // ================
 
@@ -14,6 +16,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 
   socket.on('send:message', function (message) {
     $scope.messages.push(message);
+    chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
+    // chat.scrollTop(1e+10); // scroll to bottom
   });
 
   socket.on('change:name', function (data) {
@@ -85,6 +89,9 @@ app.controller('AppCtrl', function ($scope, socket) {
   $scope.messages = [];
 
   $scope.sendMessage = function () {
+    if ($scope.message.length == 0)
+      return;
+
     socket.emit('send:message', {
       message: $scope.message
     });
@@ -97,6 +104,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 
     // clear message box
     $scope.message = '';
+    chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
+    // chat.scrollTop(1e+10); // scroll to bottom
   };
 
   $scope.togglePopup = function() {
