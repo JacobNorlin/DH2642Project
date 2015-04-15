@@ -6,8 +6,6 @@ app.controller('AppCtrl', function ($scope, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 	var MAX_MESSAGE_LENGTH = 1000;
 
-	var chat = $("#chat");
-
 	// Socket listeners
 	// ================
 
@@ -19,8 +17,10 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 	socket.on('send:message', function (message) {
 		$scope.messages.push(message);
-		chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
-		// chat.scrollTop(1e+10); // scroll to bottom
+
+		// scroll to bottom
+		$('#chat').animate({
+			scrollTop: $('#chat')[0].scrollHeight}, 50);
 	});
 
 	socket.on('change:name', function (data) {
@@ -79,7 +79,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 			text: 'User ' + oldName + ' is now known as ' + newName + '.',
 			time: getTime()
 		});
-	}
+	};
 
 	// Methods published to the scope
 	// ==============================
@@ -95,8 +95,12 @@ app.controller('AppCtrl', function ($scope, socket) {
 		}, function (result) {
 			if (!result) {
 				$scope.name = $scope.oldName;
-				alert('There was an error changing your name. Names cannot be blank or more than 30 characters and must be unique.');
-				return "Error changing name.";
+				if ($data.length == 0)
+					alert('Zero-length names are not allowed.');
+				else
+					alert('Error changing name. Perhaps it is already taken?');
+				return "Error when changing name.";
+
 			} else {
 				changeName($scope.oldName, $data);
 				$scope.name = $data;
@@ -107,10 +111,9 @@ app.controller('AppCtrl', function ($scope, socket) {
 	$scope.messages = [];
 
 	$scope.sendMessage = function () {
-		if ($scope.message.length == 0)
+		if ($scope.message.length == 0) {
 			return;
-		else if($scope.message.length > MAX_MESSAGE_LENGTH)
-		{
+		} else if($scope.message.length > MAX_MESSAGE_LENGTH)	{
 			$scope.message = $scope.message.substr(0,MAX_MESSAGE_LENGTH);
 		}
 		socket.emit('send:message', {
@@ -126,14 +129,15 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 		// clear message box
 		$scope.message = '';
-		chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
-		// chat.scrollTop(1e+10); // scroll to bottom
+
+		// scroll to bottom
+		$('#chat').animate({
+			scrollTop: $('#chat')[0].scrollHeight}, 50);
 	};
 
 	$scope.togglePopup = function() {
 		$(".overlay, .popup").fadeToggle(100);
 	};
-
 
 });
 
@@ -141,7 +145,7 @@ function getTime() {
 	var addZero = function(i) {
 		if (i < 10) i = "0" + i;
 		return i;
-	}
-	var currentdate = new Date();
-	return addZero(currentdate.getHours())+":"+addZero(currentdate.getMinutes());
-};
+	};
+	var curdate = new Date();
+	return addZero(curdate.getHours())+":"+addZero(curdate.getMinutes());
+}

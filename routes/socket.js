@@ -107,6 +107,6 @@ function getTime() {
 		if (i < 10) i = "0" + i;
 		return i;
 	};
-	var currentdate = new Date();
-	return addZero(currentdate.getHours())+":"+addZero(currentdate.getMinutes());
+	var curdate = new Date();
+	return addZero(curdate.getHours())+":"+addZero(curdate.getMinutes());
 }
