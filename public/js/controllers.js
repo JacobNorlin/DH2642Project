@@ -79,7 +79,6 @@ app.controller('AppCtrl', function ($scope, socket) {
 				alert('There was an error changing your name');
 				return "Error changing name.";
 			} else {
-
 				changeName($scope.oldName, $data);
 				$scope.name = $data;
 			}

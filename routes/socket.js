@@ -18,7 +18,7 @@ var userNames = (function () {
 
 		do {
 			name = 'Guest ' + nextUserId;
-			//name = 'Guest' + (Math.floor((Math.random() * 9000) + 1000));
+			//name = 'Guest' + (Math.floor((Math.random() * 900) + 100));
 			nextUserId += 1;
 		} while (!claim(name));
 
@@ -28,7 +28,7 @@ var userNames = (function () {
 	// serialize claimed names as an array
 	var get = function () {
 		var res = [];
-		for (user in names) {
+		for (var user in names) {
 			res.push(user);
 		}
 
