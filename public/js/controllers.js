@@ -65,18 +65,19 @@ app.controller('AppCtrl', function ($scope, socket) {
   // Methods published to the scope
   // ==============================
 
-  $scope.changeName = function () {
+  $scope.changeName = function ($data) {
+    $scope.oldName = $scope.name;
     socket.emit('change:name', {
-      name: $scope.newName
+      name: $data
     }, function (result) {
       if (!result) {
+        $scope.name = $scope.oldName;
         alert('There was an error changing your name');
+        return "Error changing name.";
       } else {
 
-        changeName($scope.name, $scope.newName);
-
-        $scope.name = $scope.newName;
-        $scope.newName = '';
+        changeName($scope.oldName, $data);
+        $scope.name = $data;
       }
     });
   };

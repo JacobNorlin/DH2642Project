@@ -13,7 +13,7 @@
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 
-		<link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+		<link href="css/xeditable.css" rel="stylesheet"/>
 
 		<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 
@@ -81,7 +81,7 @@
 
 						<table class="table">
 							<tr>
-								<td class="vert-align"><a href="#" id="username">{{name}}</a></td>
+								<td class="vert-align"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
 								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"> &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a></td>
 							</tr>
 
@@ -89,20 +89,7 @@
 								<td class="vert-align">{{user}}</td>
 								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"></td>
 							</tr>
-
-
 						</table>
-
-						<script type="text/javascript">
-							$(document).ready(function() {
-								$('#username').editable({
-									type: 'text',
-									mode: 'inline',
-									url: '/post',
-									title: 'Enter username'
-								});
-							});
-						</script>
 
 					</div>
 				</div>
@@ -157,7 +144,7 @@
 		<script src="js/filters.js"></script>
 		<script src="js/directives.js"></script>
 
-		<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+		<script src="js/xeditable.min.js"></script>
 
 	</body>
 </html>
