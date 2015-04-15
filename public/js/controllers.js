@@ -3,6 +3,7 @@
 /* Controllers */
 
 app.controller('AppCtrl', function ($scope, socket) {
+	var MAX_USERNAME_LENGTH = 30;
 
 	var chat = $("#chat");
 
@@ -70,13 +71,16 @@ app.controller('AppCtrl', function ($scope, socket) {
 	// ==============================
 
 	$scope.changeName = function ($data) {
+		if($data.length > MAX_USERNAME_LENGTH)
+			return "Names are limited to 30 characters, try a shorter name.";
+
 		$scope.oldName = $scope.name;
 		socket.emit('change:name', {
 			name: $data
 		}, function (result) {
 			if (!result) {
 				$scope.name = $scope.oldName;
-				alert('There was an error changing your name');
+				alert('There was an error changing your name. Names cannot be blank or more than 30 characters');
 				return "Error changing name.";
 			} else {
 				changeName($scope.oldName, $data);
@@ -90,7 +94,10 @@ app.controller('AppCtrl', function ($scope, socket) {
 	$scope.sendMessage = function () {
 		if ($scope.message.length == 0)
 			return;
-
+		else if($scope.message.length > 230)
+		{
+			$scope.message = $scope.message.substr(0,230);
+		}
 		socket.emit('send:message', {
 			message: $scope.message
 		});
