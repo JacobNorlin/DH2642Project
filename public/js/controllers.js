@@ -70,6 +70,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 	// Methods published to the scope
 	// ==============================
 
+    // validates name change. if name is illegal, a string should be returned.
 	$scope.changeName = function ($data) {
 		if($data.length > MAX_USERNAME_LENGTH)
 			return "Names are limited to 30 characters, try a shorter name.";
