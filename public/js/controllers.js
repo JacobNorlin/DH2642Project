@@ -30,7 +30,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 	socket.on('user:join', function (data) {
 		$scope.messages.push({
 			user: 'chatroom',
-			text: 'User ' + data.name + ' has joined.'
+			text: 'User ' + data.name + ' has joined.',
+			time: getTime()
 		});
 		$scope.users.push(data.name);
 		updateTitle();
@@ -40,7 +41,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 	socket.on('user:left', function (data) {
 		$scope.messages.push({
 			user: 'chatroom',
-			text: 'User ' + data.name + ' has left.'
+			text: 'User ' + data.name + ' has left.',
+			time: getTime()
 		});
 		var i, user;
 		for (i = 0; i < $scope.users.length; i++) {
@@ -74,14 +76,15 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 		$scope.messages.push({
 			user: 'chatroom',
-			text: 'User ' + oldName + ' is now known as ' + newName + '.'
+			text: 'User ' + oldName + ' is now known as ' + newName + '.',
+			time: getTime()
 		});
 	}
 
 	// Methods published to the scope
 	// ==============================
 
-    // validates name change. if name is illegal, a string should be returned.
+	// validates name change. if name is illegal, a string should be returned.
 	$scope.changeName = function ($data) {
 		if($data.length > MAX_USERNAME_LENGTH)
 			return "Names are limited to 30 characters, try a shorter name.";
@@ -117,7 +120,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 		// add the message to our model locally
 		$scope.messages.push({
 			user: $scope.name,
-			text: $scope.message
+			text: $scope.message,
+			time: getTime()
 		});
 
 		// clear message box
@@ -130,4 +134,14 @@ app.controller('AppCtrl', function ($scope, socket) {
 		$(".overlay, .popup").fadeToggle(100);
 	};
 
+
 });
+
+function getTime() {
+	var addZero = function(i) {
+		if (i < 10) i = "0" + i;
+		return i;
+	}
+	var currentdate = new Date();
+	return addZero(currentdate.getHours())+":"+addZero(currentdate.getMinutes());
+};

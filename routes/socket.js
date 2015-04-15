@@ -69,7 +69,8 @@ module.exports = function (socket) {
 	socket.on('send:message', function (data) {
 		socket.broadcast.emit('send:message', {
 			user: name,
-			text: data.message
+			text: data.message,
+			time: getTime()
 		});
 	});
 
@@ -100,3 +101,12 @@ module.exports = function (socket) {
 		userNames.free(name);
 	});
 };
+
+function getTime() {
+	var addZero = function(i) {
+		if (i < 10) i = "0" + i;
+		return i;
+	};
+	var currentdate = new Date();
+	return addZero(currentdate.getHours())+":"+addZero(currentdate.getMinutes());
+}
