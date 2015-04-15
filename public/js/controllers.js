@@ -13,6 +13,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 	socket.on('init', function (data) {
 		$scope.name = data.name;
 		$scope.users = data.users;
+		updateTitle();
 	});
 
 	socket.on('send:message', function (message) {
@@ -31,6 +32,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 			text: 'User ' + data.name + ' has joined.'
 		});
 		$scope.users.push(data.name);
+		updateTitle();
 	});
 
 	// add a message to the conversation when a user disconnects or leaves the room
@@ -47,10 +49,18 @@ app.controller('AppCtrl', function ($scope, socket) {
 				break;
 			}
 		}
+		updateTitle();
 	});
 
 	// Private helpers
 	// ===============
+
+	/*
+		Updates the title with the current amount of users in the room
+	 */
+	var updateTitle = function(){
+		document.title = "["+$scope.users.length+"] Gamelobby";
+	}
 
 	var changeName = function (oldName, newName) {
 		// rename user in list of users
