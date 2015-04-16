@@ -77,3 +77,15 @@ div#chat {
 .glyphicon {
   top: 0.2em;
 }
+
+.timeline-highlighted {
+    background-color: #AEB;
+}
+
+.timeline-highlighted2 {
+    background-color: #EBA;
+}
+
+.timeline-highlighted3 {
+    background-color: #ABE;
+}
