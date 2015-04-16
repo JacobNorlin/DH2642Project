@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-app.controller('AppCtrl', function ($scope, socket) {
+app.controller('ChatCtrl', function ($scope, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 
 	var chat = $("#chat");

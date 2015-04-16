@@ -6,6 +6,7 @@
 // In this case it is a simple value service.
 app.factory('socket', function ($rootScope) {
 	var socket = io.connect();
+	
 	return {
 		on: function (eventName, callback) {
 			socket.on(eventName, function () {	

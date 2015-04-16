@@ -1,6 +1,37 @@
-// Keep track of which names are used so that there are no duplicates
-var userNames = (function () {
-	var names = {};
+var rooms = (function () {
+	var rooms = {}
+
+	var createNewRoom = function(roomId) {
+		rooms[roomId] = new room(roomId)
+	}
+
+	var roomExists = function(roomId) {
+		for(var room in rooms){
+			if(room.roomId == roomId){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	var getRoom = function(roomId){
+		return rooms[roomId]
+	}
+
+	return {
+		createNewRoom: createNewRoom,
+		roomExists: roomExists,
+		getRoom: getRoom
+	}
+
+	
+}());
+
+var room = function (roomId) {
+	var roomId = roomId;
+	var names = {}
+
+
 
 	var claim = function (name) {
 		if (!name || names[name]) {
@@ -45,14 +76,16 @@ var userNames = (function () {
 		claim: claim,
 		free: free,
 		get: get,
-		getGuestName: getGuestName
+		getGuestName: getGuestName,
+		createNewRoom: createNewRoom,
+		roomId: roomId
 	};
-	
-}());
+}
+
 
 // export function for listening to the socket
 module.exports = function (socket) {
-	var name = userNames.getGuestName();
+	var name = "lol"
 
 	// send the new user their name and a list of users
 	socket.emit('init', {
@@ -90,6 +123,16 @@ module.exports = function (socket) {
 		} else {
 			fn(false);
 		}
+	});
+
+	socket.on('new:room', function(data) {
+		if(!rooms.roomExists(data.roomId)){
+			room.createNewRoom(data.roomId);
+		}else{
+			var room = rooms.getRoom(roomId)
+			room.claim(room.getGuestName());
+		}
+		
 	});
 
 	// clean up when a user leaves, and broadcast it to other users
