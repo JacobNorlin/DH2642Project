@@ -117,139 +117,93 @@
 					<div class="panel panel-default">
 						<div class="panel-heading">TIMELINE</div>
 
-                        <table class="table" id="timeline">
-                            <tr>
-                                <th></th>
-                                <th colspan="2" class="text-center">18:00</th>
-                                <th colspan="2" class="text-center">19:00</th>
-                                <th colspan="2" class="text-center">20:00</th>
-                                <th colspan="2" class="text-center">21:00</th>
-                                <th colspan="2" class="text-center">22:00</th>
-                                <th colspan="2" class="text-center">23:00</th>
-                                <th colspan="2" class="text-center">00:00</th>
-                                <th colspan="2" class="text-center">01:00</th>
-                                <th colspan="2" class="text-center">02:00</th>
-                                <th colspan="2" class="text-center">03:00</th>
-                            </tr>
-                            <tr id="timeline-row1">
-                                <td>Guest 1</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td class="timeline-highlighted"></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr id="timeline-row2">
-                                <td>Guest 2</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td class="timeline-highlighted2"></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr id="timeline-row3">
-                                <td>Guest 3</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td class="timeline-highlighted3"></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </table>
+						<table class="table" id="timeline">
+							<tr>
+								<th></th>
+								<th colspan="2" class="text-center">18:00</th>
+								<th colspan="2" class="text-center">19:00</th>
+								<th colspan="2" class="text-center">20:00</th>
+								<th colspan="2" class="text-center">21:00</th>
+								<th colspan="2" class="text-center">22:00</th>
+								<th colspan="2" class="text-center">23:00</th>
+								<th colspan="2" class="text-center">00:00</th>
+								<th colspan="2" class="text-center">01:00</th>
+								<th colspan="2" class="text-center">02:00</th>
+								<th colspan="2" class="text-center">03:00</th>
+							</tr>
+							<tr id="timeline-row">
+								<td class="no-select">{{name}}</td>
+								<td class="no-select"></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td class="timeline-highlighted"></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr ng-repeat="user in users" ng-if="user != name">
+								<td>{{user}}</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td ng-class="'timeline-highlighted'+$index%7"></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+
+						</table>
 					</div>
 				</div>
 			</div>
 
-            <script type="text/javascript">
-                $(function () {
-                    var isMouseDown = false;
-                    $("#timeline-row1 td")
-                            .mousedown(function () {
-                                isMouseDown = true;
-                                $(this).toggleClass("timeline-highlighted");
-                                return false; // prevent text selection
-                            })
-                            .mouseover(function () {
-                                if (isMouseDown) {
-                                    $(this).toggleClass("timeline-highlighted");
-                                }
-                            });
+			<script type="text/javascript">
+				$(function () {
+					var isMouseDown = false;
+					$("#timeline-row td:not(.no-select)")
+						.mousedown(function () {
+							isMouseDown = true;
+							$(this).toggleClass("timeline-highlighted");
+							return false; // prevent text selection
+						})
+						.mouseover(function () {
+							if (isMouseDown) {
+								$(this).toggleClass("timeline-highlighted");
+							}
+						});
 
-                    $("#timeline-row2 td")
-                            .mousedown(function () {
-                                isMouseDown = true;
-                                $(this).toggleClass("timeline-highlighted2");
-                                return false; // prevent text selection
-                            })
-                            .mouseover(function () {
-                                if (isMouseDown) {
-                                    $(this).toggleClass("timeline-highlighted2");
-                                }
-                            });
-
-                    $("#timeline-row3 td")
-                            .mousedown(function () {
-                                isMouseDown = true;
-                                $(this).toggleClass("timeline-highlighted3");
-                                return false; // prevent text selection
-                            })
-                            .mouseover(function () {
-                                if (isMouseDown) {
-                                    $(this).toggleClass("timeline-highlighted3");
-                                }
-                            });
-
-                    $(document)
-                            .mouseup(function () {
-                                isMouseDown = false;
-                            });
-                });
-            </script>
+					$(document)
+						.mouseup(function () {
+							isMouseDown = false;
+						});
+				});
+			</script>
 
 			<div class="overlay" ng-click="togglePopup()"></div>
 			<div class="popup" ng-click="togglePopup()" style="border-radius: 10px"><button type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button><br>Some popup text</div>
@@ -258,7 +212,7 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 		<script src="js/lib/angular/angular.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
-        <script src="js/lib/xeditable.min.js"></script>
+		<script src="js/lib/xeditable.min.js"></script>
 		<script src="js/app.js"></script>
 		<script src="js/services.js"></script>
 		<script src="js/controllers.js"></script>
