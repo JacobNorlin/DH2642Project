@@ -78,14 +78,11 @@ div#chat {
   top: 0.2em;
 }
 
-.timeline-highlighted {
-    background-color: #AEB;
-}
-
-.timeline-highlighted2 {
-    background-color: #EBA;
-}
-
-.timeline-highlighted3 {
-    background-color: #ABE;
-}
+.timeline-highlighted  { background-color: #9787BE }
+.timeline-highlighted0 { background-color: #C896BF }
+.timeline-highlighted1 { background-color: #8AD2F4 }
+.timeline-highlighted2 { background-color: #94B1DC }
+.timeline-highlighted3 { background-color: #D5E39F }
+.timeline-highlighted4 { background-color: #94CA9B }
+.timeline-highlighted5 { background-color: #FACE91 }
+.timeline-highlighted6 { background-color: #EF9DA2 }
