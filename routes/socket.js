@@ -7,7 +7,8 @@ module.exports = function (io) {
 		// send the new user their name and a list of users
 		socket.emit('init', {
 			name: name,
-			users: model.get()
+			users: model.getNames(),
+			timeline: model.getTimes()
 		});
 
 		// notify other clients that a new user has joined
@@ -28,7 +29,10 @@ module.exports = function (io) {
 		socket.on('change:name', function (data, fn) {
 			if (model.claim(data.name)) {
 				var oldName = name;
+				model.renameTimeline(oldName, data.name);
+
 				model.free(oldName);
+
 
 				name = data.name;
 
@@ -96,7 +100,7 @@ var model = (function () {
 	};
 
 	// serialize claimed names as an array
-	var get = function () {
+	var getNames = function () {
 		var res = [];
 		for (var user in userdata) {
 			res.push(user);
@@ -123,18 +127,28 @@ var model = (function () {
 		}
 	};
 
-	var getTimes = function(name) {
-		if (userdata[name])
-			return userdata[name].times;
+	var renameTimeline = function(oldName, newName) {
+		if (userdata[oldName]) {
+			userdata[newName].times = userdata[oldName].times;
+		}
+	};
+
+	var getTimes = function() {
+		var timeline = {};
+		for (var user in userdata) {
+			timeline[user] = userdata[user].times;
+		}
+		return timeline;
 	};
 
 	return {
 		claim: claim,
 		free: free,
-		get: get,
+		getNames: getNames,
 		getGuestName: getGuestName,
 		addTime: addTime,
 		removeTime: removeTime,
+		renameTimeline: renameTimeline,
 		getTimes: getTimes
 	};
 
