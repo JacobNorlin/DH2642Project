@@ -34,6 +34,9 @@ app.controller('AppCtrl', function ($scope, socket) {
 			time: getTime()
 		});
 		$scope.users.push(data.name);
+
+		$scope.timeline[data.name] = {};
+
 		updateTitle();
 	});
 
@@ -52,8 +55,21 @@ app.controller('AppCtrl', function ($scope, socket) {
 				break;
 			}
 		}
+
+		delete $scope.timeline[data.name];
 		updateTitle();
 	});
+
+	socket.on('timeline:edit', function (data) {
+		if (data.operation == "remove") {
+			delete $scope.timeline[data.name][data.time];
+		} else if (data.operation == "add") {
+			if (!$scope.timeline[data.name])
+				$scope.timeline[data.name] = {};
+			$scope.timeline[data.name][data.time] = true;
+		}
+	});
+
 
 	// Private helpers
 	// ===============
@@ -80,6 +96,9 @@ app.controller('AppCtrl', function ($scope, socket) {
 			time: getTime()
 		});
 
+		$scope.timeline[newName] = $scope.timeline[oldName];
+		delete $scope.timeline[oldName];
+
 		$('#chat').animate({
 			scrollTop: $('#chat')[0].scrollHeight}, 50);
 	};
@@ -103,7 +122,6 @@ app.controller('AppCtrl', function ($scope, socket) {
 				else
 					alert('Error changing name. Perhaps it is already taken?');
 				return "Error when changing name.";
-
 			}
 		});
 	};
@@ -124,9 +142,51 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 	};
 
+	$scope.timeline = {};
+
 	$scope.togglePopup = function() {
 		$(".overlay, .popup").fadeToggle(100);
 	};
+
+	$(function () {
+		var checkState = function(elem) {
+			if (elem.hasClass("timeline-highlighted")) {
+				socket.emit('timeline:edit', {
+					operation: "add",
+					time: elem.attr("id")
+				});
+				//console.log(elem.attr("id")+" enabled");
+			}
+			else {
+				socket.emit('timeline:edit', {
+					operation: "remove",
+					time: elem.attr("id")
+				});
+				//console.log(elem.attr("id")+" disabled");
+			}
+		};
+
+		var isMouseDown = false;
+
+		$("#timeline-row td:not(.no-select)")
+			.mousedown(function () {
+				isMouseDown = true;
+				$(this).toggleClass("timeline-highlighted");
+				checkState($(this));
+				return false; // prevent text selection
+			})
+			.mouseover(function () {
+				if (isMouseDown) {
+					$(this).toggleClass("timeline-highlighted");
+					checkState($(this));
+				}
+			});
+
+		$(document)
+			.mouseup(function () {
+				isMouseDown = false;
+			});
+	});
 
 });
 

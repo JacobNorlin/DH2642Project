@@ -2,12 +2,12 @@
 module.exports = function (io) {
 
 	io.sockets.on('connection', function (socket) {
-		var name = userNames.getGuestName();
+		var name = model.getGuestName();
 
 		// send the new user their name and a list of users
 		socket.emit('init', {
 			name: name,
-			users: userNames.get()
+			users: model.get()
 		});
 
 		// notify other clients that a new user has joined
@@ -26,9 +26,9 @@ module.exports = function (io) {
 
 		// validate a user's name change, and broadcast it on success
 		socket.on('change:name', function (data, fn) {
-			if (userNames.claim(data.name)) {
+			if (model.claim(data.name)) {
 				var oldName = name;
-				userNames.free(oldName);
+				model.free(oldName);
 
 				name = data.name;
 
@@ -43,25 +43,40 @@ module.exports = function (io) {
 			}
 		});
 
+		// user changed their timeline preferences
+		socket.on('timeline:edit', function (data) {
+			if (data.operation == "remove") {
+				model.removeTime(name, data.time);
+			} else if (data.operation == "add") {
+				model.addTime(name, data.time);
+			}
+
+			//add sender's name
+			data.name = name;
+
+			socket.broadcast.emit('timeline:edit', data);
+		});
+
 		// clean up when a user leaves, and broadcast it to other users
 		socket.on('disconnect', function () {
 			socket.broadcast.emit('user:left', {
 				name: name
 			});
-			userNames.free(name);
+			model.free(name);
 		});
+
 	})
 };
 
 // Keep track of which names are used so that there are no duplicates
-var userNames = (function () {
-	var names = {};
+var model = (function () {
+	var userdata = {};
 
 	var claim = function (name) {
-		if (!name || names[name]) {
+		if (!name || userdata[name]) {
 			return false;
 		} else {
-			names[name] = true;
+			userdata[name] = {games: {}, times: {}};
 			return true;
 		}
 	};
@@ -83,7 +98,7 @@ var userNames = (function () {
 	// serialize claimed names as an array
 	var get = function () {
 		var res = [];
-		for (var user in names) {
+		for (var user in userdata) {
 			res.push(user);
 		}
 
@@ -91,16 +106,36 @@ var userNames = (function () {
 	};
 
 	var free = function (name) {
-		if (names[name]) {
-			delete names[name];
+		if (userdata[name]) {
+			delete userdata[name];
 		}
+	};
+
+	var addTime = function(name, time) {
+		if (userdata[name]) {
+			userdata[name].times[time] = true;
+		}
+	};
+
+	var removeTime = function(name, time) {
+		if (userdata[name]) {
+			delete userdata[name].times[time];
+		}
+	};
+
+	var getTimes = function(name) {
+		if (userdata[name])
+			return userdata[name].times;
 	};
 
 	return {
 		claim: claim,
 		free: free,
 		get: get,
-		getGuestName: getGuestName
+		getGuestName: getGuestName,
+		addTime: addTime,
+		removeTime: removeTime,
+		getTimes: getTimes
 	};
 
 }());
