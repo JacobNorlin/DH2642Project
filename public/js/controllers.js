@@ -79,6 +79,9 @@ app.controller('AppCtrl', function ($scope, socket) {
 			text: 'User ' + oldName + ' is now known as ' + newName + '.',
 			time: getTime()
 		});
+
+		$('#chat').animate({
+			scrollTop: $('#chat')[0].scrollHeight}, 50);
 	};
 
 	// Methods published to the scope
@@ -101,9 +104,6 @@ app.controller('AppCtrl', function ($scope, socket) {
 					alert('Error changing name. Perhaps it is already taken?');
 				return "Error when changing name.";
 
-			} else {
-				changeName($scope.oldName, $data);
-				$scope.name = $data;
 			}
 		});
 	};
@@ -120,19 +120,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 			message: $scope.message
 		});
 
-		// add the message to our model locally
-		$scope.messages.push({
-			user: $scope.name,
-			text: $scope.message,
-			time: getTime()
-		});
-
-		// clear message box
 		$scope.message = '';
 
-		// scroll to bottom
-		$('#chat').animate({
-			scrollTop: $('#chat')[0].scrollHeight}, 50);
 	};
 
 	$scope.togglePopup = function() {

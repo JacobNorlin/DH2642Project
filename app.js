@@ -3,10 +3,7 @@
  * Module dependencies.
  */
 
-var express = require('express'),
-	routes = require('./routes'),
-	socket = require('./routes/socket.js');
-
+var express = require('express');
 var app = module.exports = express.createServer();
 
 // Hook Socket.io into Express
@@ -21,17 +18,7 @@ app.configure(function(){
 	});
 });
 
-// Routes
-
-// app.get('/', routes.index);
-// app.get('/partials/:name', routes.partials);
-
-// redirect all others to the index (HTML5 history)
-// app.get('*', routes.index);
-
-// Socket.io Communication
-
-io.sockets.on('connection', socket);
+var socket = require('./routes/socket.js')(io);
 
 // Start server
 

@@ -134,25 +134,25 @@
 							<tr id="timeline-row">
 								<td class="no-select">{{name}}</td>
 								<td class="no-select"></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td class="timeline-highlighted"></td>
-								<td></td>
-								<td></td>
-								<td></td>
+								<td id="1800"></td>
+								<td id="1830"></td>
+								<td id="1900"></td>
+								<td id="1930"></td>
+								<td id="2000"></td>
+								<td id="2030"></td>
+								<td id="2100" class="timeline-highlighted"></td>
+								<td id="2130" class="timeline-highlighted"></td>
+								<td id="2200" class="timeline-highlighted"></td>
+								<td id="2230" class="timeline-highlighted"></td>
+								<td id="2300" class="timeline-highlighted"></td>
+								<td id="2330" class="timeline-highlighted"></td>
+								<td id="0000" class="timeline-highlighted"></td>
+								<td id="0030" class="timeline-highlighted"></td>
+								<td id="0100" class="timeline-highlighted"></td>
+								<td id="0130" class="timeline-highlighted"></td>
+								<td id="0200"></td>
+								<td id="0230"></td>
+								<td id="0300"></td>
 							</tr>
 							<tr ng-repeat="user in users" ng-if="user != name">
 								<td>{{user}}</td>
@@ -183,28 +183,6 @@
 				</div>
 			</div>
 
-			<script type="text/javascript">
-				$(function () {
-					var isMouseDown = false;
-					$("#timeline-row td:not(.no-select)")
-						.mousedown(function () {
-							isMouseDown = true;
-							$(this).toggleClass("timeline-highlighted");
-							return false; // prevent text selection
-						})
-						.mouseover(function () {
-							if (isMouseDown) {
-								$(this).toggleClass("timeline-highlighted");
-							}
-						});
-
-					$(document)
-						.mouseup(function () {
-							isMouseDown = false;
-						});
-				});
-			</script>
-
 			<div class="overlay" ng-click="togglePopup()"></div>
 			<div class="popup" ng-click="togglePopup()" style="border-radius: 10px"><button type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button><br>Some popup text</div>
 		</div>
@@ -216,6 +194,7 @@
 		<script src="js/app.js"></script>
 		<script src="js/services.js"></script>
 		<script src="js/controllers.js"></script>
+        <script src="js/client.js"></script>
 
 	</body>
 </html>
