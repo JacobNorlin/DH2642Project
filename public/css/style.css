@@ -74,8 +74,46 @@ div#chat {
     margin-top: -125px;
 }
 
-.glyphicon {
-  top: 0.2em;
+.addglyphicon {
+  top: 0.9em;
+}
+
+.image-thumb, .image-thumb img {
+    position:relative;
+    width:42px;
+    height:42px;
+}
+.image-their {
+    display:none;
+    position:absolute;
+    bottom:0px;
+    left:0px;
+    width:42px;
+    height:42px;
+    background-image:url(../images/placeholder.png);
+}
+
+.image-own {
+    display:none;
+    position:absolute;
+    bottom:0px;
+    left:0px;
+    width:42px;
+    height:42px;
+    background-image:url(../images/placeholder.png);
+}
+.image-thumb:hover .image-their {
+    display:block;
+}
+
+.image-thumb:hover .image-own {
+    display:block;
+}
+.image-own:hover {
+    background-image:url(../images/hover_trash.png);
+}
+.image-their:hover {
+    background-image:url(../images/hover_copy.png);
 }
 
 .timeline-highlighted  { background-color: #9787BE }

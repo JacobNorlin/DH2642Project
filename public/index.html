@@ -45,22 +45,28 @@
 
 						<table class="table">
 							<tr>
-								<td class="vert-align"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
-								<td class="text-left">
-                                    <div style="float:left" ng-repeat="(gameid, data) in userdata[name].games">
-                                        <img ng-src="{{data.coverurl}}" ng-click="removeGame(gameid)" title="{{data.name}}">&nbsp
+								<td class="vert-align" style="width: 20%"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
+								<td style="height: 59px">
+                                    <div class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, data) in userdata[name].games">
+                                        <img ng-src="{{data.coverurl}}" title="{{data.name}}">
+                                        <a ng-click="removeGame(gameid)" href="#" class="image-own"></a>
+
                                     </div>
 
                                     <div style="float:left">
-                                        &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                                        &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus addglyphicon" aria-hidden="true"></span></a>
+
                                     </div>
                                 </td>
 							</tr>
 
 							<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
 								<td class="vert-align">{{user}}</td>
-								<td>
-                                    <div style="float:left" ng-repeat="(gameid, gamedata) in userdata[user].games"><img ng-src="{{gamedata.coverurl}}" ng-click="copyGame(user, gameid)">&nbsp</div>
+								<td style="height: 59px">
+                                    <div  class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, gamedata) in userdata[user].games">
+                                        <img ng-src="{{gamedata.coverurl}}">&nbsp
+                                        <a ng-click="copyGame(user, gameid)" href="#" class="image-their"></a>
+                                    </div>
                                 </td>
 							</tr>
 						</table>
