@@ -41,8 +41,6 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	});
 
 	socket.on('user:join', function (data) {
-		console.log("join: ");
-		console.log(data);
 		$scope.messages.push({
 			user: 'chatroom',
 			text: 'User ' + data.name + ' has joined.',

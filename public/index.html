@@ -49,7 +49,7 @@
 								<td style="height: 59px">
                                     <div class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, data) in userdata[name].games">
                                         <img ng-src="{{data.coverurl}}" title="{{data.name}}">
-                                        <a ng-click="removeGame(gameid)" href="#" class="image-own"></a>
+                                        <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
 
                                     </div>
 
@@ -64,8 +64,8 @@
 								<td class="vert-align">{{user}}</td>
 								<td style="height: 59px">
                                     <div  class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, gamedata) in userdata[user].games">
-                                        <img ng-src="{{gamedata.coverurl}}">&nbsp
-                                        <a ng-click="copyGame(user, gameid)" href="#" class="image-their"></a>
+                                        <img ng-src="{{gamedata.coverurl}}" title="{{gamedata.name}}">&nbsp
+                                        <a ng-click="copyGame(user, gameid)" title="{{gamedata.name}}" href="#" class="image-their"></a>
                                     </div>
                                 </td>
 							</tr>
@@ -126,15 +126,15 @@
 
 			<div class="overlay" ng-click="togglePopup()"></div>
 			<div id="addgamepopup" class="popup" style="border-radius: 10px">
-                <button type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span ng-click="togglePopup()" aria-hidden="true">&times;</span></button>
+                <button ng-click="togglePopup()" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
                 <br>
-                Some popup text
+                <span style="font-size: 1.15em; font-weight: bold">ADD A GAME</span><br>
                 <br><br><br>
+                (try: csgo, l4d, dota2, quake3)<br>
                 <form ng-submit="submitGameSearch()">
                     <input id="searchbox" type="text" name="searchbox" ng-model="searchterm" size="40">
                 </form>
                 <br>
-                {{searchterm}}
             </div>
 		</div>
 

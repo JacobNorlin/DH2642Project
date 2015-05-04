@@ -240,8 +240,8 @@ var model = (function () {
 	var addGameFromAPI = function(gameid) {
 		gamedata[gameid] = {
 			// make api call
-			name: "random name atm",
-			coverurl: "images/quake3_thumb.jpg"
+			name: "Unknown game",
+			coverurl: "images/unknown.png"
 		}
 	};
 
