@@ -2,20 +2,46 @@
 module.exports = function (io) {
 
 	io.sockets.on('connection', function (socket) {
-		var name = model.getGuestName();
+		var name = '';
 
-		// send the new user their name and a list of users
-		socket.emit('init', {
-			name: name,
-			userdata: model.getUserData()
+		socket.emit('cookies:get', '', function(reply) {
+			if (reply) {
+				name = model.getName(reply.name);
+
+				if (reply.games) {
+					reply.games.forEach(function(gameid) {
+						model.addGame(name, gameid);
+					});
+				}
+
+				if (reply.timeline) {
+					reply.timeline.forEach(function(time) {
+						model.addTime(name, time);
+					});
+				}
+			} else {
+				name = model.getGuestName();
+			}
+			init();
 		});
 
-		// notify other clients that a new user has joined
-		socket.broadcast.emit('user:join', {
+		// send the new user their name and a list of users
+		var init = function() {
+			socket.emit('init', {
 				name: name,
-				data: model.getUserData()[name]
-			}
-		);
+				userdata: model.getUserData()
+			});
+			newJoin();
+		}
+
+		// notify other clients that a new user has joined
+		var newJoin = function() {
+			socket.broadcast.emit('user:join', {
+					name: name,
+					data: model.getUserData()[name]
+				}
+			);
+		}
 
 		// broadcast a user's message to other users
 		socket.on('send:message', function (data) {
@@ -48,12 +74,12 @@ module.exports = function (io) {
 		// user changed their timeline preferences
 		socket.on('timeline:edit:add', function (data) {
 			model.addTime(name, data.time);
-			socket.broadcast.emit('timeline:edit:add', data);
+			io.sockets.emit('timeline:edit:add', data);
 		});
 
 		socket.on('timeline:edit:remove', function (data) {
 			model.removeTime(name, data.time);
-			socket.broadcast.emit('timeline:edit:remove', data);
+			io.sockets.emit('timeline:edit:remove', data);
 		});
 
 
@@ -127,18 +153,22 @@ var model = (function () {
 		}
 	};
 
-	// find the lowest unused "guest" name and claim it
-	var getGuestName = function () {
-		var name,
-			nextGuestId = 1;
+	var getName = function(name) {
+		var nextNum = 1;
+		if (name === 'Guest ')
+			name = name+nextNum;
 
-		do {
-			name = 'Guest ' + nextGuestId;
-			//name = 'Guest' + (Math.floor((Math.random() * 900) + 100));
-			nextGuestId += 1;
-		} while (!claimName(name));
+		while (!claimName(name)) {
+			name = name + nextNum;
+			nextNum += 1;
+		}
 
 		return name;
+	}
+
+	// find the lowest unused "guest" name and claim it
+	var getGuestName = function () {
+		return getName('Guest ');
 	};
 
 	// serialize claimed names as an array
@@ -235,6 +265,7 @@ var model = (function () {
 		claimName: claimName,
 		freeName: freeName,
 		getUserData: getUserData,
+		getName: getName,
 		getGuestName: getGuestName,
 		addTime: addTime,
 		removeTime: removeTime,

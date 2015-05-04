@@ -2,12 +2,24 @@
 
 /* Controllers */
 
-app.controller('AppCtrl', function ($scope, socket) {
+app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 	var MAX_MESSAGE_LENGTH = 1000;
 
 	// Socket listeners
 	// ================
+
+	socket.on('cookies:get', function (data, callback) {
+		if ($cookieStore.get("name")) {
+			callback({
+				name: $cookieStore.get("name"),
+				games: $cookieStore.get("games"),
+				timeline: $cookieStore.get("timeline")
+			})
+		} else {
+			callback(false);
+		}
+	});
 
 	socket.on('init', function (data) {
 		$scope.name = data.name;
@@ -29,6 +41,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 	});
 
 	socket.on('user:join', function (data) {
+		console.log("join: ");
+		console.log(data);
 		$scope.messages.push({
 			user: 'chatroom',
 			text: 'User ' + data.name + ' has joined.',
@@ -53,18 +67,19 @@ app.controller('AppCtrl', function ($scope, socket) {
 		if (!$scope.userdata[data.name].timeline)
 			console.log("userdata did not have timeline.");
 		$scope.userdata[data.name].timeline[data.time] = true;
+		saveToCookie();
 	});
 
 	socket.on('timeline:edit:remove', function (data) {
 		delete $scope.userdata[data.name].timeline[data.time];
+		saveToCookie();
 	});
 
 	socket.on('game:add', function (data) {
-		console.log("received game:add from server:");
-		console.log(data);
 		if ($scope.userdata[data.name].games[data.gameid])
 			return;
 		$scope.userdata[data.name].games[data.gameid] = data.gamedata;
+		saveToCookie();
 	});
 
 	socket.on('game:remove', function (data) {
@@ -81,7 +96,29 @@ app.controller('AppCtrl', function ($scope, socket) {
 	 */
 	var updateTitle = function(){
 		document.title = "["+Object.keys($scope.userdata).length+"] Gamelobby";
+	};
+
+	var saveToCookie = function() {
+		$cookieStore.put("name", $scope.name);
+		$cookieStore.put("games", gamesToList());
+		$cookieStore.put("timeline", timelineToList());
 	}
+
+	var gamesToList = function() {
+		var games = [];
+		for (var key in $scope.userdata[$scope.name].games) {
+			games.push(key);
+		}
+		return games;
+	};
+
+	var timelineToList = function() {
+		var timeline = [];
+		for (var key in $scope.userdata[$scope.name].timeline) {
+			timeline.push(key);
+		}
+		return timeline;
+	};
 
 	var changeName = function (oldName, newName) {
 		// rename user in list of §users
@@ -118,6 +155,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 				else
 					alert('Error changing name. Perhaps it is already taken?');
 				return "Error when changing name.";
+			} else {
+				saveToCookie();
 			}
 		});
 	};
@@ -144,23 +183,25 @@ app.controller('AppCtrl', function ($scope, socket) {
 	};
 
 	$scope.submitGameSearch = function() {
-		console.log($scope.searchterm);
 		socket.emit('game:add', $scope.searchterm);
 		$scope.searchterm = '';
 	}
 
 	$scope.removeGame = function(gameid) {
-		socket.emit('game:remove', gameid);
+		socket.emit('game:remove', gameid)
 		delete $scope.userdata[$scope.name].games[gameid];
+		saveToCookie();
 	}
 
 	$scope.copyGame = function(user, gameid) {
 		socket.emit('game:copy', gameid);
 		$scope.userdata[$scope.name].games[gameid] = $scope.userdata[user].games[gameid];
+		saveToCookie();
 	}
 
 	// timeline selection
 	$(function () {
+
 		var checkState = function(elem) {
 			if (elem.hasClass("timeline-highlighted"+$scope.id%7)) {
 				socket.emit('timeline:edit:add', {
