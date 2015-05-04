@@ -7,14 +7,15 @@ module.exports = function (io) {
 		// send the new user their name and a list of users
 		socket.emit('init', {
 			name: name,
-			users: model.getNames(),
-			timeline: model.getTimes()
+			userdata: model.getUserData()
 		});
 
 		// notify other clients that a new user has joined
 		socket.broadcast.emit('user:join', {
-			name: name
-		});
+				name: name,
+				data: model.getUserData()[name]
+			}
+		);
 
 		// broadcast a user's message to other users
 		socket.on('send:message', function (data) {
@@ -27,12 +28,10 @@ module.exports = function (io) {
 
 		// validate a user's name change, and broadcast it on success
 		socket.on('change:name', function (data, fn) {
-			if (model.claim(data.name)) {
+			if (model.claimName(data.name)) {
 				var oldName = name;
 				model.renameTimeline(oldName, data.name);
-
-				model.free(oldName);
-
+				model.freeName(oldName);
 
 				name = data.name;
 
@@ -50,13 +49,10 @@ module.exports = function (io) {
 		// user changed their timeline preferences
 		socket.on('timeline:edit', function (data) {
 			if (data.operation == "remove") {
-				model.removeTime(name, data.time);
+				model.removeTime(data.name, data.time);
 			} else if (data.operation == "add") {
-				model.addTime(name, data.time);
+				model.addTime(data.name, data.time);
 			}
-
-			//add sender's name
-			data.name = name;
 
 			socket.broadcast.emit('timeline:edit', data);
 		});
@@ -66,7 +62,7 @@ module.exports = function (io) {
 			socket.broadcast.emit('user:left', {
 				name: name
 			});
-			model.free(name);
+			model.freeName(name);
 		});
 
 	})
@@ -76,11 +72,12 @@ module.exports = function (io) {
 var model = (function () {
 	var userdata = {};
 
-	var claim = function (name) {
+	// if name is available, create it
+	var claimName = function (name) {
 		if (!name || userdata[name]) {
 			return false;
 		} else {
-			userdata[name] = {games: {}, times: {}};
+			userdata[name] = {"id": nextId(), games: {}, timeline: {}};
 			return true;
 		}
 	};
@@ -88,68 +85,78 @@ var model = (function () {
 	// find the lowest unused "guest" name and claim it
 	var getGuestName = function () {
 		var name,
-			nextUserId = 1;
+			nextGuestId = 1;
 
 		do {
-			name = 'Guest ' + nextUserId;
+			name = 'Guest ' + nextGuestId;
 			//name = 'Guest' + (Math.floor((Math.random() * 900) + 100));
-			nextUserId += 1;
-		} while (!claim(name));
+			nextGuestId += 1;
+		} while (!claimName(name));
 
 		return name;
 	};
 
 	// serialize claimed names as an array
-	var getNames = function () {
-		var res = [];
-		for (var user in userdata) {
-			res.push(user);
-		}
-
-		return res;
+	var getUserData = function () {
+		return userdata;
 	};
 
-	var free = function (name) {
+	// delete user name
+	var freeName = function (name) {
 		if (userdata[name]) {
 			delete userdata[name];
 		}
 	};
 
+	// add time for username at time
 	var addTime = function(name, time) {
 		if (userdata[name]) {
-			userdata[name].times[time] = true;
+			userdata[name].timeline[time] = true;
 		}
 	};
 
+	//
+	var curId = 0;
+	var nextId = function() {
+		return curId++;
+	};
+
+	var getId = function() {
+		return curId;
+	}
+
+	// remove time for username at time
 	var removeTime = function(name, time) {
 		if (userdata[name]) {
-			delete userdata[name].times[time];
+			delete userdata[name].timeline[time];
 		}
 	};
 
+	// move timeline data from old username to new
 	var renameTimeline = function(oldName, newName) {
 		if (userdata[oldName]) {
-			userdata[newName].times = userdata[oldName].times;
+			userdata[newName].timeline = userdata[oldName].timeline;
 		}
 	};
 
-	var getTimes = function() {
+	// return timeline data for all users
+	var getTimeline = function() {
 		var timeline = {};
 		for (var user in userdata) {
-			timeline[user] = userdata[user].times;
+			timeline[user] = userdata[user].timeline;
 		}
 		return timeline;
 	};
 
 	return {
-		claim: claim,
-		free: free,
-		getNames: getNames,
+		claimName: claimName,
+		freeName: freeName,
+		getUserData: getUserData,
 		getGuestName: getGuestName,
 		addTime: addTime,
 		removeTime: removeTime,
 		renameTimeline: renameTimeline,
-		getTimes: getTimes
+		getTimeline: getTimeline
 	};
 
 }());

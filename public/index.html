@@ -49,7 +49,7 @@
 								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"> &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a></td>
 							</tr>
 
-							<tr ng-repeat="user in users" ng-if="user != name">
+							<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
 								<td class="vert-align">{{user}}</td>
 								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"></td>
 							</tr>
@@ -90,62 +90,17 @@
 						<table class="table" id="timeline">
 							<tr>
 								<th></th>
-								<th colspan="2" class="text-center">18:00</th>
-								<th colspan="2" class="text-center">19:00</th>
-								<th colspan="2" class="text-center">20:00</th>
-								<th colspan="2" class="text-center">21:00</th>
-								<th colspan="2" class="text-center">22:00</th>
-								<th colspan="2" class="text-center">23:00</th>
-								<th colspan="2" class="text-center">00:00</th>
-								<th colspan="2" class="text-center">01:00</th>
-								<th colspan="2" class="text-center">02:00</th>
-								<th colspan="2" class="text-center">03:00</th>
+								<th ng-repeat="time in times" ng-if="$index%2 == 0" colspan="2" class="text-center">{{time}}</th>
 							</tr>
 							<tr id="timeline-row">
 								<td class="no-select">{{name}}</td>
 								<td class="no-select"></td>
-								<td id="1800"></td>
-								<td id="1830"></td>
-								<td id="1900"></td>
-								<td id="1930"></td>
-								<td id="2000"></td>
-								<td id="2030"></td>
-								<td id="2100"></td>
-								<td id="2130"></td>
-								<td id="2200"></td>
-								<td id="2230"></td>
-								<td id="2300"></td>
-								<td id="2330"></td>
-								<td id="0000"></td>
-								<td id="0030"></td>
-								<td id="0100"></td>
-								<td id="0130"></td>
-								<td id="0200"></td>
-								<td id="0230"></td>
-								<td id="0300"></td>
+								<td ng-repeat="time in times" id="{{time}}"></td>
 							</tr>
-							<tr ng-repeat="user in users" ng-if="user != name">
+							<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
 								<td>{{user}}</td>
 								<td></td>
-								<td ng-class="timeline[user]['1800'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['1830'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['1900'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['1930'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2000'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2030'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2100'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2130'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2200'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2230'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2300'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['2330'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0000'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0030'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0100'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0130'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0200'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0230'] ? 'timeline-highlighted'+$index%7 : ''"></td>
-								<td ng-class="timeline[user]['0300'] ? 'timeline-highlighted'+$index%7 : ''"></td>
+                                <td ng-repeat="time in times" ng-class="userdata[user].timeline[time] ? 'timeline-highlighted'+data.id%7 : ''"></td>
 							</tr>
 
 						</table>

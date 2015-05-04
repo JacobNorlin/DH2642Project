@@ -11,8 +11,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 	socket.on('init', function (data) {
 		$scope.name = data.name;
-		$scope.users = data.users;
-		$scope.timeline = data.timeline;
+		$scope.userdata = data.userdata;
+		$scope.id = data.userdata[data.name].id;
 		updateTitle();
 	});
 
@@ -34,10 +34,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 			text: 'User ' + data.name + ' has joined.',
 			time: getTime()
 		});
-		$scope.users.push(data.name);
-
-		$scope.timeline[data.name] = {};
-
+		$scope.userdata[data.name] = data.data;
 		updateTitle();
 	});
 
@@ -48,26 +45,17 @@ app.controller('AppCtrl', function ($scope, socket) {
 			text: 'User ' + data.name + ' has left.',
 			time: getTime()
 		});
-		var i, user;
-		for (i = 0; i < $scope.users.length; i++) {
-			user = $scope.users[i];
-			if (user === data.name) {
-				$scope.users.splice(i, 1);
-				break;
-			}
-		}
-
-		delete $scope.timeline[data.name];
+		delete $scope.userdata[data.name];
 		updateTitle();
 	});
 
 	socket.on('timeline:edit', function (data) {
 		if (data.operation == "remove") {
-			delete $scope.timeline[data.name][data.time];
+			delete $scope.userdata[data.name].timeline[data.time];
 		} else if (data.operation == "add") {
-			if (!$scope.timeline[data.name])
-				$scope.timeline[data.name] = {};
-			$scope.timeline[data.name][data.time] = true;
+			if (!$scope.userdata[data.name].timeline)
+				console.log("userdata did not have timeline.");
+			$scope.userdata[data.name].timeline[data.time] = true;
 		}
 	});
 
@@ -79,26 +67,20 @@ app.controller('AppCtrl', function ($scope, socket) {
 		Updates the title with the current amount of users in the room
 	 */
 	var updateTitle = function(){
-		document.title = "["+$scope.users.length+"] Gamelobby";
+		document.title = "["+Object.keys($scope.userdata).length+"] Gamelobby";
 	}
 
 	var changeName = function (oldName, newName) {
-		// rename user in list of users
+		// rename user in list of §users
 		var i;
-		for (i = 0; i < $scope.users.length; i++) {
-			if ($scope.users[i] === oldName) {
-				$scope.users[i] = newName;
-			}
-		}
+		$scope.userdata[newName] = $scope.userdata[oldName];
+		delete $scope.userdata[oldName];
 
 		$scope.messages.push({
 			user: 'chatroom',
 			text: 'User ' + oldName + ' is now known as ' + newName + '.',
 			time: getTime()
 		});
-
-		$scope.timeline[newName] = $scope.timeline[oldName];
-		delete $scope.timeline[oldName];
 
 		$('#chat').animate({
 			scrollTop: $('#chat')[0].scrollHeight}, 50);
@@ -129,6 +111,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 	$scope.messages = [];
 
+	// fires when pressing enter in chat input box
 	$scope.sendMessage = function () {
 		if ($scope.message.length == 0) {
 			return;
@@ -140,19 +123,18 @@ app.controller('AppCtrl', function ($scope, socket) {
 		});
 
 		$scope.message = '';
-
 	};
-
-	$scope.timeline = {};
 
 	$scope.togglePopup = function() {
 		$(".overlay, .popup").fadeToggle(100);
 	};
 
+	// timeline selection
 	$(function () {
 		var checkState = function(elem) {
-			if (elem.hasClass("timeline-highlighted")) {
+			if (elem.hasClass("timeline-highlighted"+$scope.id%7)) {
 				socket.emit('timeline:edit', {
+					name: $scope.name,
 					operation: "add",
 					time: elem.attr("id")
 				});
@@ -160,6 +142,7 @@ app.controller('AppCtrl', function ($scope, socket) {
 			}
 			else {
 				socket.emit('timeline:edit', {
+					name: $scope.name,
 					operation: "remove",
 					time: elem.attr("id")
 				});
@@ -169,16 +152,17 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 		var isMouseDown = false;
 
+
 		$("#timeline-row td:not(.no-select)")
 			.mousedown(function () {
 				isMouseDown = true;
-				$(this).toggleClass("timeline-highlighted");
+				$(this).toggleClass("timeline-highlighted"+$scope.id%7);
 				checkState($(this));
 				return false; // prevent text selection
 			})
 			.mouseover(function () {
 				if (isMouseDown) {
-					$(this).toggleClass("timeline-highlighted");
+					$(this).toggleClass("timeline-highlighted"+$scope.id%7);
 					checkState($(this));
 				}
 			});
@@ -188,6 +172,8 @@ app.controller('AppCtrl', function ($scope, socket) {
 				isMouseDown = false;
 			});
 	});
+
+	$scope.times = [ '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30', '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00' ];
 
 });
 
