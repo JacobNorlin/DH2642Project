@@ -30,10 +30,9 @@ module.exports = function (io) {
 		socket.on('change:name', function (data, fn) {
 			if (model.claimName(data.name)) {
 				var oldName = name;
-				model.renameTimeline(oldName, data.name);
-				model.freeName(oldName);
-
 				name = data.name;
+				model.renameTimeline(oldName, name);
+				model.freeName(oldName);
 
 				io.sockets.emit('change:name', {
 					oldName: oldName,
@@ -47,14 +46,43 @@ module.exports = function (io) {
 		});
 
 		// user changed their timeline preferences
-		socket.on('timeline:edit', function (data) {
-			if (data.operation == "remove") {
-				model.removeTime(data.name, data.time);
-			} else if (data.operation == "add") {
-				model.addTime(data.name, data.time);
-			}
+		socket.on('timeline:edit:add', function (data) {
+			model.addTime(name, data.time);
+			socket.broadcast.emit('timeline:edit:add', data);
+		});
 
-			socket.broadcast.emit('timeline:edit', data);
+		socket.on('timeline:edit:remove', function (data) {
+			model.removeTime(name, data.time);
+			socket.broadcast.emit('timeline:edit:remove', data);
+		});
+
+
+		// user added/removed game
+		socket.on('game:add', function (gameid) {
+			model.addGame(name, gameid);
+			io.sockets.emit('game:add', {
+				name: name,
+				gameid: gameid,
+				gamedata: model.getUserData()[name].games[gameid]
+			});
+		});
+
+		// user added/removed game
+		socket.on('game:copy', function (gameid) {
+			model.copyGame(name, gameid);
+			socket.broadcast.emit('game:add', {
+				name: name,
+				gameid: gameid,
+				gamedata: model.getUserData()[name].games[gameid]
+			});
+		});
+
+		socket.on('game:remove', function (gameid) {
+			model.removeGame(name, gameid);
+			socket.broadcast.emit('game:remove', {
+				name: name,
+				gameid: gameid
+			});
 		});
 
 		// clean up when a user leaves, and broadcast it to other users
@@ -71,6 +99,23 @@ module.exports = function (io) {
 // Keep track of which names are used so that there are no duplicates
 var model = (function () {
 	var userdata = {};
+	var gamedata = {};
+	gamedata["csgo"] = {
+		coverurl: "images/csgo_thumb.jpg",
+		name: "Counter-Strike: Global Offensive"
+	};
+	gamedata["quake3"] = {
+		coverurl: "images/quake3_thumb.jpg",
+		name: "Quake 3 Arena"
+	};
+	gamedata["l4d"] = {
+		coverurl: "images/l4d_thumb.jpg",
+		name: "Left 4 Dead"
+	};
+	gamedata["dota2"] = {
+		coverurl: "images/dota2_thumb.jpg",
+		name: "Dota 2"
+	};
 
 	// if name is available, create it
 	var claimName = function (name) {
@@ -148,6 +193,44 @@ var model = (function () {
 		return timeline;
 	};
 
+	var addGame = function(name, gameid) {
+		if (!getGame(gameid))
+			addGameFromAPI(gameid);
+		addGameToUser(name, gameid);
+	};
+
+	var copyGame = function(name, gameid) {
+		addGameToUser(name, gameid);
+	};
+
+	var removeGame = function(name, gameid) {
+		removeGameFromUser(name, gameid)
+	};
+
+	var addGameFromAPI = function(gameid) {
+		gamedata[gameid] = {
+			// make api call
+			name: "random name atm",
+			coverurl: "images/quake3_thumb.jpg"
+		}
+	};
+
+	var addGameToUser = function(name, gameid) {
+		userdata[name].games[gameid] = {
+			id: gameid,
+			name: getGame(gameid).name,
+			coverurl: getGame(gameid).coverurl
+		}
+	}
+
+	var removeGameFromUser = function(name, gameid) {
+		delete userdata[name].games[gameid];
+	}
+
+	var getGame = function(gameid) {
+		return gamedata[gameid];
+	};
+
 	return {
 		claimName: claimName,
 		freeName: freeName,
@@ -156,7 +239,10 @@ var model = (function () {
 		addTime: addTime,
 		removeTime: removeTime,
 		renameTimeline: renameTimeline,
-		getTimeline: getTimeline
+		getTimeline: getTimeline,
+		addGame: addGame,
+		copyGame: copyGame,
+		removeGame: removeGame
 	};
 
 }());

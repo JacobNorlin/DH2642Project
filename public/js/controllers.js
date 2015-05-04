@@ -49,16 +49,29 @@ app.controller('AppCtrl', function ($scope, socket) {
 		updateTitle();
 	});
 
-	socket.on('timeline:edit', function (data) {
-		if (data.operation == "remove") {
-			delete $scope.userdata[data.name].timeline[data.time];
-		} else if (data.operation == "add") {
-			if (!$scope.userdata[data.name].timeline)
-				console.log("userdata did not have timeline.");
-			$scope.userdata[data.name].timeline[data.time] = true;
-		}
+	socket.on('timeline:edit:add', function (data) {
+		if (!$scope.userdata[data.name].timeline)
+			console.log("userdata did not have timeline.");
+		$scope.userdata[data.name].timeline[data.time] = true;
 	});
 
+	socket.on('timeline:edit:remove', function (data) {
+		delete $scope.userdata[data.name].timeline[data.time];
+	});
+
+	socket.on('game:add', function (data) {
+		console.log("received game:add from server:");
+		console.log(data);
+		if ($scope.userdata[data.name].games[data.gameid])
+			return;
+		$scope.userdata[data.name].games[data.gameid] = data.gamedata;
+	});
+
+	socket.on('game:remove', function (data) {
+		if (!$scope.userdata[data.name].games[data.gameid])
+			console.log("tried to remove gamedata that didnt exist.");
+		delete $scope.userdata[data.name].games[data.gameid];
+	});
 
 	// Private helpers
 	// ===============
@@ -127,23 +140,38 @@ app.controller('AppCtrl', function ($scope, socket) {
 
 	$scope.togglePopup = function() {
 		$(".overlay, .popup").fadeToggle(100);
+		$("#searchbox").focus();
 	};
+
+	$scope.submitGameSearch = function() {
+		console.log($scope.searchterm);
+		socket.emit('game:add', $scope.searchterm);
+		$scope.searchterm = '';
+	}
+
+	$scope.removeGame = function(gameid) {
+		socket.emit('game:remove', gameid);
+		delete $scope.userdata[$scope.name].games[gameid];
+	}
+
+	$scope.copyGame = function(user, gameid) {
+		socket.emit('game:copy', gameid);
+		$scope.userdata[$scope.name].games[gameid] = $scope.userdata[user].games[gameid];
+	}
 
 	// timeline selection
 	$(function () {
 		var checkState = function(elem) {
 			if (elem.hasClass("timeline-highlighted"+$scope.id%7)) {
-				socket.emit('timeline:edit', {
+				socket.emit('timeline:edit:add', {
 					name: $scope.name,
-					operation: "add",
 					time: elem.attr("id")
 				});
 				//console.log(elem.attr("id")+" enabled");
 			}
 			else {
-				socket.emit('timeline:edit', {
+				socket.emit('timeline:edit:remove', {
 					name: $scope.name,
-					operation: "remove",
 					time: elem.attr("id")
 				});
 				//console.log(elem.attr("id")+" disabled");

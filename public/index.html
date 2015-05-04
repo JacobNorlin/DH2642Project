@@ -46,12 +46,22 @@
 						<table class="table">
 							<tr>
 								<td class="vert-align"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
-								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"> &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a></td>
+								<td class="text-left">
+                                    <div style="float:left" ng-repeat="(gameid, data) in userdata[name].games">
+                                        <img ng-src="{{data.coverurl}}" ng-click="removeGame(gameid)" title="{{data.name}}">&nbsp
+                                    </div>
+
+                                    <div style="float:left">
+                                        &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+                                    </div>
+                                </td>
 							</tr>
 
 							<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
 								<td class="vert-align">{{user}}</td>
-								<td><img src="images/csgo_thumb.jpg"> <img src="images/dota2_thumb.jpg"> <img src="images/l4d_thumb.jpg"> <img src="images/quake3_thumb.jpg"></td>
+								<td>
+                                    <div style="float:left" ng-repeat="(gameid, gamedata) in userdata[user].games"><img ng-src="{{gamedata.coverurl}}" ng-click="copyGame(user, gameid)">&nbsp</div>
+                                </td>
 							</tr>
 						</table>
 
@@ -74,7 +84,7 @@
 											<input ng-model="message" style="width:100%">
 										</div>
 										<div class="col-xs-3">
-											<input ng-click="sendMessage()" type="submit" value="send" style="width:100%">
+											<input id="chatinput" ng-click="sendMessage()" type="submit" value="send" style="width:100%">
 										</div>
 									<!-- </form> -->
 								</div>
@@ -109,7 +119,17 @@
 			</div>
 
 			<div class="overlay" ng-click="togglePopup()"></div>
-			<div class="popup" ng-click="togglePopup()" style="border-radius: 10px"><button type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button><br>Some popup text</div>
+			<div id="addgamepopup" class="popup" style="border-radius: 10px">
+                <button type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span ng-click="togglePopup()" aria-hidden="true">&times;</span></button>
+                <br>
+                Some popup text
+                <br><br><br>
+                <form ng-submit="submitGameSearch()">
+                    <input id="searchbox" type="text" name="searchbox" ng-model="searchterm" size="40">
+                </form>
+                <br>
+                {{searchterm}}
+            </div>
 		</div>
 
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
