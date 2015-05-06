@@ -2,8 +2,10 @@
 
 /* Services */
 
-// Demonstrate how to register services
-// In this case it is a simple value service.
+
+/**
+ * Register the 'on' and 'emit' services for handling client and server communication.
+ */
 app.factory('socket', function ($rootScope) {
 	var socket = io.connect();
 	return {

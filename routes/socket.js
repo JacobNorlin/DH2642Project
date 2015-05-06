@@ -1,9 +1,21 @@
+/**
+ * Handle serverside communication
+ * @Authors Magnus Olsson, Richard Nysäter, Jacob Norlin
+ * @param io The io to use
+ */
+
 // export function for listening to the socket
 module.exports = function (io) {
 
+	/**
+	 * Executes when a new connection is established
+	 */
 	io.sockets.on('connection', function (socket) {
 		var name = '';
 
+		/**
+		 *	Check if user has existing data in a cookie
+		 */
 		socket.emit('cookies:get', '', function(reply) {
 			if (reply) {
 				name = model.getName(reply.name);
@@ -25,25 +37,31 @@ module.exports = function (io) {
 			init();
 		});
 
-		// send the new user their name and a list of users
+		/**
+		 * Send the new user their name and a list of the users
+		 */
 		var init = function() {
 			socket.emit('init', {
 				name: name,
 				userdata: model.getUserData()
 			});
 			newJoin();
-		}
+		};
 
-		// notify other clients that a new user has joined
+		/**
+		 *	Notify other clients that a new user has joined
+ 		 */
 		var newJoin = function() {
 			socket.broadcast.emit('user:join', {
 					name: name,
 					data: model.getUserData()[name]
 				}
 			);
-		}
+		};
 
-		// broadcast a user's message to other users
+		/**
+		 * Broadcast a user's message to other users
+		 */
 		socket.on('send:message', function (data) {
 			io.sockets.emit('send:message', {
 				user: name,
@@ -52,7 +70,9 @@ module.exports = function (io) {
 			});
 		});
 
-		// validate a user's name change, and broadcast it on success
+		/**
+		 * Validate a user's name change, and broadcast it on success
+		 */
 		socket.on('change:name', function (data, fn) {
 			if (model.claimName(data.name)) {
 				var oldName = name;
@@ -71,19 +91,27 @@ module.exports = function (io) {
 			}
 		});
 
-		// user changed their timeline preferences
+
+		/**
+		 * User added a new time to their timeline
+		 */
 		socket.on('timeline:edit:add', function (data) {
 			model.addTime(name, data.time);
 			io.sockets.emit('timeline:edit:add', data);
 		});
 
+		/**
+		 * User removed a time from their timeline
+		 */
 		socket.on('timeline:edit:remove', function (data) {
 			model.removeTime(name, data.time);
 			io.sockets.emit('timeline:edit:remove', data);
 		});
 
 
-		// user added/removed game
+		/**
+		 * User added a new game
+		 */
 		socket.on('game:add', function (gameid) {
 			model.addGame(name, gameid);
 			io.sockets.emit('game:add', {
@@ -93,7 +121,9 @@ module.exports = function (io) {
 			});
 		});
 
-		// user added/removed game
+		/**
+		 * User copied a game
+		 */
 		socket.on('game:copy', function (gameid) {
 			model.copyGame(name, gameid);
 			socket.broadcast.emit('game:add', {
@@ -103,6 +133,9 @@ module.exports = function (io) {
 			});
 		});
 
+		/**
+		 * User removed a game
+		 */
 		socket.on('game:remove', function (gameid) {
 			model.removeGame(name, gameid);
 			socket.broadcast.emit('game:remove', {
@@ -111,7 +144,9 @@ module.exports = function (io) {
 			});
 		});
 
-		// clean up when a user leaves, and broadcast it to other users
+		/**
+		 * Clean up when a user leaves, and broadcast it to other users
+		 */
 		socket.on('disconnect', function () {
 			socket.broadcast.emit('user:left', {
 				name: name
@@ -122,10 +157,15 @@ module.exports = function (io) {
 	})
 };
 
-// Keep track of which names are used so that there are no duplicates
+/**
+ * The model stores data
+ * @type {{claimName, freeName, getUserData, getName, getGuestName, addTime, removeTime, renameTimeline, getTimeline, addGame, copyGame, removeGame}}
+ */
 var model = (function () {
 	var userdata = {};
 	var gamedata = {};
+
+	// Test data please ignore
 	gamedata["csgo"] = {
 		coverurl: "images/csgo_thumb.jpg",
 		name: "Counter-Strike: Global Offensive"
@@ -143,7 +183,11 @@ var model = (function () {
 		name: "Dota 2"
 	};
 
-	// if name is available, create it
+	/**
+	 * If name is available, create a new user with that name
+	 * @param name The name the user wants
+	 * @returns {boolean} True if user was created, false otherwise
+	 */
 	var claimName = function (name) {
 		if (!name || userdata[name]) {
 			return false;
@@ -153,6 +197,11 @@ var model = (function () {
 		}
 	};
 
+	/**
+	 * Get an available name
+	 * @param name The requested name
+	 * @returns {*} An available name
+	 */
 	var getName = function(name) {
 		var nextNum = 1;
 		if (name === 'Guest ')
@@ -164,57 +213,90 @@ var model = (function () {
 		}
 
 		return name;
-	}
+	};
 
-	// find the lowest unused "guest" name and claim it
+	/**
+	 * Find the lowest unused "guest" name and claim it
+	 * @returns {*} A guest name
+	 */
 	var getGuestName = function () {
 		return getName('Guest ');
 	};
 
-	// serialize claimed names as an array
+	/**
+	 * Get userdata
+	 * @returns {{}} The current userdata
+	 */
 	var getUserData = function () {
 		return userdata;
 	};
 
-	// delete user name
+
+	/**
+	 *	Delete a user
+	 * @param name The name of the user to delete
+	 */
 	var freeName = function (name) {
 		if (userdata[name]) {
 			delete userdata[name];
 		}
 	};
 
-	// add time for username at time
+	var curId = 0;
+
+	/**
+	 * Return the next unique ID
+	 * @returns {number} A unique ID
+	 */
+	var nextId = function() {
+		return curId++;
+	};
+
+	/**
+	 * Return the current ID
+	 * @returns {number} The current ID
+	 */
+	var getId = function() {
+		return curId;
+	};
+
+	/**
+	 * Add a new time to a user's timeline
+	 * @param name The name of the user
+	 * @param time The time to add
+	 */
 	var addTime = function(name, time) {
 		if (userdata[name]) {
 			userdata[name].timeline[time] = true;
 		}
 	};
 
-	//
-	var curId = 0;
-	var nextId = function() {
-		return curId++;
-	};
-
-	var getId = function() {
-		return curId;
-	}
-
-	// remove time for username at time
+	/**
+	 * Remove a time from a user's timeline
+	 * @param name The name of the user
+	 * @param time The time to remove
+	 */
 	var removeTime = function(name, time) {
 		if (userdata[name]) {
 			delete userdata[name].timeline[time];
 		}
 	};
 
-	// move timeline data from old username to new
+	/**
+	 * Move the timeline data from an old username to a new one
+	 * @param oldName The username to move data from
+	 * @param newName The username to move data to
+	 */
 	var renameTimeline = function(oldName, newName) {
 		if (userdata[oldName]) {
 			userdata[newName].timeline = userdata[oldName].timeline;
 		}
 	};
 
-	// return timeline data for all users
+	/**
+	 * Return the timeline of all users
+	 * @returns {{}} The timeline of all users
+	 */
 	var getTimeline = function() {
 		var timeline = {};
 		for (var user in userdata) {
@@ -223,20 +305,39 @@ var model = (function () {
 		return timeline;
 	};
 
+	/**
+	 * Add a new game to a user by preferably getting it locally or from API if required
+	 * @param name The username of the user
+	 * @param gameid The id of the game
+	 */
 	var addGame = function(name, gameid) {
 		if (!getGame(gameid))
 			addGameFromAPI(gameid);
 		addGameToUser(name, gameid);
 	};
 
+	/**
+	 * Copy a game to a user
+	 * @param name The username to copy the game to
+	 * @param gameid The id of the game
+	 */
 	var copyGame = function(name, gameid) {
 		addGameToUser(name, gameid);
 	};
 
+	/**
+	 * Remove a game from a user
+	 * @param name The username of the user
+	 * @param gameid The id of the game
+	 */
 	var removeGame = function(name, gameid) {
 		removeGameFromUser(name, gameid)
 	};
 
+	/**
+	 * Download data for a game from the API
+	 * @param gameid The id of the game
+	 */
 	var addGameFromAPI = function(gameid) {
 		gamedata[gameid] = {
 			// make api call
@@ -245,18 +346,33 @@ var model = (function () {
 		}
 	};
 
+	/**
+	 * Add a new game to a user from existing model
+	 * @param name The username to add the game to
+	 * @param gameid The id of the game
+	 */
 	var addGameToUser = function(name, gameid) {
 		userdata[name].games[gameid] = {
 			id: gameid,
 			name: getGame(gameid).name,
 			coverurl: getGame(gameid).coverurl
 		}
-	}
+	};
 
+	/**
+	 * Remove a game from a user
+	 * @param name The username to remove from
+	 * @param gameid The id of the game
+	 */
 	var removeGameFromUser = function(name, gameid) {
 		delete userdata[name].games[gameid];
-	}
+	};
 
+	/**
+	 * Get data for a game
+	 * @param gameid The id of the game
+	 * @returns {*} The data for that game
+	 */
 	var getGame = function(gameid) {
 		return gamedata[gameid];
 	};
@@ -278,6 +394,10 @@ var model = (function () {
 
 }());
 
+/**
+ * Return the current time
+ * @returns {string} The current time
+ */
 function getTime() {
 	var addZero = function(i) {
 		if (i < 10) i = "0" + i;
