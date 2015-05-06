@@ -162,6 +162,9 @@ module.exports = function (io) {
  * @type {{claimName, freeName, getUserData, getName, getGuestName, addTime, removeTime, renameTimeline, getTimeline, addGame, copyGame, removeGame}}
  */
 var model = (function () {
+	var INITIAL_GUEST_NAME = 'Guest ';
+	var MAX_USERNAME_LENGTH = 30;
+	var MAX_MESSAGE_LENGTH = 1000;
 	var userdata = {};
 	var gamedata = {};
 
@@ -189,13 +192,27 @@ var model = (function () {
 	 * @returns {boolean} True if user was created, false otherwise
 	 */
 	var claimName = function (name) {
-		if (!name || userdata[name]) {
-			return false;
-		} else {
+		if(validName(name)) {
 			userdata[name] = {"id": nextId(), games: {}, timeline: {}};
 			return true;
 		}
+		else
+			return false;
 	};
+
+	/**
+	 * Checks if a name is valid
+	 * @returns {boolean} True if name is valid, false otherwise
+	 */
+	var validName = function (name){
+		if (!name || userdata[name] || name.length > MAX_USERNAME_LENGTH) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	};
+
 
 	/**
 	 * Get an available name
@@ -204,14 +221,17 @@ var model = (function () {
 	 */
 	var getName = function(name) {
 		var nextNum = 1;
-		if (name === 'Guest ')
+		var originalName = name;
+		if (name === INITIAL_GUEST_NAME)
 			name = name+nextNum;
 
 		while (!claimName(name)) {
-			name = name + nextNum;
-			nextNum += 1;
-		}
+			name = originalName + nextNum;
 
+			nextNum += 1;
+			if(name.length > MAX_USERNAME_LENGTH) // If name is too long we give him guest name instead
+				name = INITIAL_GUEST_NAME;
+		}
 		return name;
 	};
 
@@ -220,7 +240,7 @@ var model = (function () {
 	 * @returns {*} A guest name
 	 */
 	var getGuestName = function () {
-		return getName('Guest ');
+		return getName(INITIAL_GUEST_NAME);
 	};
 
 	/**
@@ -340,7 +360,7 @@ var model = (function () {
 	 */
 	var addGameFromAPI = function(gameid) {
 		gamedata[gameid] = {
-			// make api call
+			// TODO: make api call here
 			name: "Unknown game",
 			coverurl: "images/unknown.png"
 		}
