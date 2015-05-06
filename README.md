@@ -5,8 +5,8 @@
 
 ## TODO
 * Support for different rooms
-* Changing username
-* Adding games to user
-* Saving name and games in cookie
-* Timeline
+* API integration
+* Serverside checks for timeline & games abuse
+* Notify users when a game has enough players
+* Allow users to set min (and max?) amount of players for a game
 * Polish interaction
