@@ -3,6 +3,8 @@
  * @Authors Magnus Olsson, Richard Nysäter, Jacob Norlin
  * @param io The io to use
  */
+var MAX_USERNAME_LENGTH = 30;
+var MAX_MESSAGE_LENGTH = 1000;
 
 // export function for listening to the socket
 module.exports = function (io) {
@@ -63,17 +65,19 @@ module.exports = function (io) {
 		 * Broadcast a user's message to other users
 		 */
 		socket.on('send:message', function (data) {
-			io.sockets.emit('send:message', {
-				user: name,
-				text: data.message,
-				time: getTime()
-			});
+			if(data.message.length <= MAX_MESSAGE_LENGTH) {
+				io.sockets.emit('send:message', {
+					user: name,
+					text: data.message,
+					time: getTime()
+				});
+			}
 		});
 
 		/**
 		 * Validate a user's name change, and broadcast it on success
 		 */
-		socket.on('change:name', function (data, fn) {
+		socket.on('change:name', function (data, callback) {
 			if (model.claimName(data.name)) {
 				var oldName = name;
 				name = data.name;
@@ -85,9 +89,9 @@ module.exports = function (io) {
 					newName: name
 				});
 
-				fn(true);
+				callback(true);
 			} else {
-				fn(false);
+				callback(false);
 			}
 		});
 
@@ -163,8 +167,6 @@ module.exports = function (io) {
  */
 var model = (function () {
 	var INITIAL_GUEST_NAME = 'Guest ';
-	var MAX_USERNAME_LENGTH = 30;
-	var MAX_MESSAGE_LENGTH = 1000;
 	var userdata = {};
 	var gamedata = {};
 
@@ -212,7 +214,6 @@ var model = (function () {
 			return true;
 		}
 	};
-
 
 	/**
 	 * Get an available name
