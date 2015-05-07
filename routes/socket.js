@@ -15,6 +15,14 @@ module.exports = function (io) {
 	io.sockets.on('connection', function (socket) {
 		var name = '';
 
+		console.log("Someone connected!");
+
+		// socket.emit('join:room', 
+		// 	 {
+		// 	 	roomId: 1
+		// 	 }
+		// })
+
 		/**
 		 *	Check if user has existing data in a cookie
 		 */
@@ -165,7 +173,38 @@ module.exports = function (io) {
  * The model stores data
  * @type {{claimName, freeName, getUserData, getName, getGuestName, addTime, removeTime, renameTimeline, getTimeline, addGame, copyGame, removeGame}}
  */
-var model = (function () {
+
+var Rooms = (function(){
+	var rooms = {}
+
+	var createNewRoom = function (roomId){
+		rooms[roomId] = new Room(roomId);
+	}
+
+	var roomExists = function(roomId) {
+		for(var room in rooms){
+			if(room.roomId == roomId){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	var getRoom = function(roomId) {
+		if(roomExists(roomId)){
+			return rooms[roomId];
+		}
+	}
+
+	return {
+		createNewRoom: createNewRoom,
+		roomExists: roomExists,
+		getRoom: getRoom
+	}
+})();
+
+var model = (function (roomId) {
+	var roomId = roomId;
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};

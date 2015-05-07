@@ -3,25 +3,39 @@
  * Module dependencies.
  */
 
-var express = require('express');
-var app = module.exports = express.createServer();
+var express = require('express.io');
+var app = module.exports = express();
+var server = require('http').Server(app)
+
+
+app.http().io()
 
 // Hook Socket.io into Express
-var io = require('socket.io').listen(app);
+var io = app.io;
+
+var expressServer = app.listen(3001, function(){
+
+	var host = expressServer.address().address;
+	var port = expressServer.address().port;
+
+	console.log("App listening at http://%s_%s", host , port);
+
+})
 
 // Configuration
 
-app.configure(function(){
-	app.use(express.static(__dirname + '/public'));
-	app.get('/', function(req, res) {
-		res.sendFile(__dirname + '/index.html');
+app.use(express.static(__dirname + '/public'));
+
+app.get('/room/:roomId', function(req, res) {
+		console.log(req.params.roomId)
+		res.sendFile(__dirname + "/index.html")
 	});
-});
+app.get('/', function(req, res) {
+		res.sendFile(__dirname + "/index.html")
+	});
 
 var socket = require('./routes/socket.js')(io);
 
 // Start server
 
-app.listen(3000, function(){
-	console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
-});
+
