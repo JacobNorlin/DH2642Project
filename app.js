@@ -3,17 +3,13 @@
  * Module dependencies.
  */
 
-var express = require('express.io');
-var app = module.exports = express();
-var server = require('http').Server(app)
+var express = require('express'),
+	app = express(),
+	server = require('http').Server(app),
+	io = require('socket.io')(server)
 
 
-app.http().io()
-
-// Hook Socket.io into Express
-var io = app.io;
-
-var expressServer = app.listen(3001, function(){
+var expressServer = server.listen(3001, function(){
 
 	var host = expressServer.address().address;
 	var port = expressServer.address().port;

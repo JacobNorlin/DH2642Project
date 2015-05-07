@@ -7,7 +7,7 @@
  * Register the 'on' and 'emit' services for handling client and server communication.
  */
 app.factory('socket', function ($rootScope) {
-	var socket = io.connect('http://localhost');
+	var socket = io.connect();
 	return {
 		on: function (eventName, callback) {
 			socket.on(eventName, function () {	
