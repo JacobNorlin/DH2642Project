@@ -2,7 +2,20 @@
 
 /* Controllers */
 
-app.controller('ChatCtrl', function ($scope, socket) {
+app.controller('ChatCtrl', function ($scope, socket, $routeParams) {
+
+	var roomId = $routeParams.roomId;
+	
+
+	//Try to create new room or join existing room
+	socket.emit('new:room',{
+		roomId:roomId
+	});
+	console.log(socket)
+
+	socket.setRoomId(roomId);
+	console.log(socket.getRoomId())
+	
 	var MAX_USERNAME_LENGTH = 30;
 
 	var chat = $("#chat");
@@ -16,9 +29,12 @@ app.controller('ChatCtrl', function ($scope, socket) {
 	});
 
 	socket.on('send:message', function (message) {
-		$scope.messages.push(message);
-		chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
-		// chat.scrollTop(1e+10); // scroll to bottom
+		if(message.roomId == socket.roomId){
+			$scope.messages.push(message);
+			chat.scrollTop(chat.prop("scrollHeight")); // scroll to bottom
+			// chat.scrollTop(1e+10); // scroll to bottom
+		}
+		
 	});
 
 	socket.on('change:name', function (data) {
@@ -100,7 +116,8 @@ app.controller('ChatCtrl', function ($scope, socket) {
 			$scope.message = $scope.message.substr(0,230);
 		}
 		socket.emit('send:message', {
-			message: $scope.message
+			message: $scope.message,
+			roomId: socket.getRoomId()
 		});
 
 		// add the message to our model locally

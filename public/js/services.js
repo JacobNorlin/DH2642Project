@@ -6,6 +6,15 @@
 // In this case it is a simple value service.
 app.factory('socket', function ($rootScope) {
 	var socket = io.connect();
+	var roomId;
+
+	var setRoomId = function(roomId){
+		roomId = roomId;
+	}
+	var getRoomId = function(){
+		return roomId;
+	}
+
 	
 	return {
 		on: function (eventName, callback) {
@@ -25,6 +34,8 @@ app.factory('socket', function ($rootScope) {
 					}
 				});
 			})
-		}
+		},	
+		setRoomId: setRoomId,
+		getRoomId: getRoomId
 	};
 });

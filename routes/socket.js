@@ -77,7 +77,6 @@ var room = function (roomId) {
 		free: free,
 		get: get,
 		getGuestName: getGuestName,
-		createNewRoom: createNewRoom,
 		roomId: roomId
 	};
 }
@@ -88,10 +87,10 @@ module.exports = function (socket) {
 	var name = "lol"
 
 	// send the new user their name and a list of users
-	socket.emit('init', {
-		name: name,
-		users: userNames.get()
-	});
+	// socket.emit('init', {
+	// 	name: name,
+	// 	users: userNames.get()
+	// });
 
 	// notify other clients that a new user has joined
 	socket.broadcast.emit('user:join', {
@@ -100,46 +99,50 @@ module.exports = function (socket) {
 
 	// broadcast a user's message to other users
 	socket.on('send:message', function (data) {
+		console.log(data);
 		socket.broadcast.emit('send:message', {
 			user: name,
-			text: data.message
+			text: data.message,
+			roomId: data.roomId
 		});
 	});
 
 	// validate a user's name change, and broadcast it on success
-	socket.on('change:name', function (data, fn) {
-		if (userNames.claim(data.name)) {
-			var oldName = name;
-			userNames.free(oldName);
+	// socket.on('change:name', function (data, fn) {
+	// 	if (userNames.claim(data.name)) {
+	// 		var oldName = name;
+	// 		userNames.free(oldName);
 
-			name = data.name;
+	// 		name = data.name;
 			
-			socket.broadcast.emit('change:name', {
-				oldName: oldName,
-				newName: name
-			});
+	// 		socket.broadcast.emit('change:name', {
+	// 			oldName: oldName,
+	// 			newName: name
+	// 		});
 
-			fn(true);
-		} else {
-			fn(false);
-		}
-	});
+	// 		fn(true);
+	// 	} else {
+	// 		fn(false);
+	// 	}
+	// });
 
 	socket.on('new:room', function(data) {
+		
 		if(!rooms.roomExists(data.roomId)){
-			room.createNewRoom(data.roomId);
+			rooms.createNewRoom(data.roomId);
 		}else{
-			var room = rooms.getRoom(roomId)
+			//If room exists we claim a username in that room
+			var room = rooms.getRoom(data.roomId)
 			room.claim(room.getGuestName());
 		}
 		
 	});
 
 	// clean up when a user leaves, and broadcast it to other users
-	socket.on('disconnect', function () {
-		socket.broadcast.emit('user:left', {
-			name: name
-		});
-		userNames.free(name);
-	});
+	// socket.on('disconnect', function () {
+	// 	socket.broadcast.emit('user:left', {
+	// 		name: name
+	// 	});
+	// 	userNames.free(name);
+	// });
 };
