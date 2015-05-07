@@ -211,19 +211,19 @@ var model = (function (roomId) {
 
 	// Test data please ignore
 	gamedata["csgo"] = {
-		coverurl: "images/csgo_thumb.jpg",
+		coverurl: "/images/csgo_thumb.jpg",
 		name: "Counter-Strike: Global Offensive"
 	};
 	gamedata["quake3"] = {
-		coverurl: "images/quake3_thumb.jpg",
+		coverurl: "/images/quake3_thumb.jpg",
 		name: "Quake 3 Arena"
 	};
 	gamedata["l4d"] = {
-		coverurl: "images/l4d_thumb.jpg",
+		coverurl: "/images/l4d_thumb.jpg",
 		name: "Left 4 Dead"
 	};
 	gamedata["dota2"] = {
-		coverurl: "images/dota2_thumb.jpg",
+		coverurl: "/images/dota2_thumb.jpg",
 		name: "Dota 2"
 	};
 

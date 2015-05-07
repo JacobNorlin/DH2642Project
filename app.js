@@ -6,9 +6,10 @@
 var express = require('express'),
 	app = express(),
 	server = require('http').Server(app),
-	io = require('socket.io')(server)
+	io = require('socket.io')(server),
+	routes = require('./routes');
 
-
+var socket = require('./routes/socket.js')(io);
 var expressServer = server.listen(3001, function(){
 
 	var host = expressServer.address().address;
@@ -22,15 +23,15 @@ var expressServer = server.listen(3001, function(){
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/room/:roomId', function(req, res) {
-		console.log(req.params.roomId)
-		res.sendFile(__dirname + "/index.html")
-	});
-app.get('/', function(req, res) {
-		res.sendFile(__dirname + "/index.html")
-	});
+app.get('/rooms/:roomId', function (req, res) {
+  res.sendFile(__dirname + '/public/index.html');
+});
 
-var socket = require('./routes/socket.js')(io);
+
+app.get('/*', function (req, res) {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 
 // Start server
 
