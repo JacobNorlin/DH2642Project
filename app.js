@@ -5,6 +5,7 @@
 
 var express = require('express');
 var app = module.exports = express.createServer();
+var request = require('request');
 
 // Hook Socket.io into Express
 var io = require('socket.io').listen(app);

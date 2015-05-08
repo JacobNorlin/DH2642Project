@@ -1,10 +1,13 @@
 /**
  * Handle serverside communication
- * @Authors Magnus Olsson, Richard Nysäter, Jacob Norlin
+ * @Authors Magnus Olsson, Richard Nysï¿½ter, Jacob Norlin
  * @param io The io to use
  */
 var MAX_USERNAME_LENGTH = 30;
 var MAX_MESSAGE_LENGTH = 1000;
+
+var giantbomb = require('../config.js').giantbomb;
+var request = require('request');
 
 // export function for listening to the socket
 module.exports = function (io) {
@@ -24,7 +27,9 @@ module.exports = function (io) {
 
 				if (reply.games) {
 					reply.games.forEach(function(gameid) {
-						model.addGame(name, gameid);
+						model.addGame(name, gameid, function(){
+							console.log("added cookie game "+gameid);
+						});
 					});
 				}
 
@@ -112,16 +117,26 @@ module.exports = function (io) {
 			io.sockets.emit('timeline:edit:remove', data);
 		});
 
+		/**
+		 * User sends search request to server
+		 */
+		socket.on('game:search', function (searchquery) {
+			model.gameSearchAPI(searchquery, function(results) {
+				io.sockets.emit('game:searchresults', results);
+			});
+		});
+
 
 		/**
 		 * User added a new game
 		 */
 		socket.on('game:add', function (gameid) {
-			model.addGame(name, gameid);
-			io.sockets.emit('game:add', {
-				name: name,
-				gameid: gameid,
-				gamedata: model.getUserData()[name].games[gameid]
+			model.addGame(name, gameid, function() {
+				io.sockets.emit('game:add', {
+					name: name,
+					gameid: gameid,
+					gamedata: model.getUserData()[name].games[gameid]
+				});
 			});
 		});
 
@@ -169,24 +184,6 @@ var model = (function () {
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};
-
-	// Test data please ignore
-	gamedata["csgo"] = {
-		coverurl: "images/csgo_thumb.jpg",
-		name: "Counter-Strike: Global Offensive"
-	};
-	gamedata["quake3"] = {
-		coverurl: "images/quake3_thumb.jpg",
-		name: "Quake 3 Arena"
-	};
-	gamedata["l4d"] = {
-		coverurl: "images/l4d_thumb.jpg",
-		name: "Left 4 Dead"
-	};
-	gamedata["dota2"] = {
-		coverurl: "images/dota2_thumb.jpg",
-		name: "Dota 2"
-	};
 
 	/**
 	 * If name is available, create a new user with that name
@@ -331,10 +328,16 @@ var model = (function () {
 	 * @param name The username of the user
 	 * @param gameid The id of the game
 	 */
-	var addGame = function(name, gameid) {
-		if (!getGame(gameid))
-			addGameFromAPI(gameid);
-		addGameToUser(name, gameid);
+	var addGame = function(name, gameid, callback) {
+		if (!getGame(gameid)) {
+			addGameByIdAPI(gameid, function(){
+				addGameToUser(name, gameid);
+				callback();
+			});
+		} else {
+			addGameToUser(name, gameid);
+			callback();
+		}
 	};
 
 	/**
@@ -359,12 +362,58 @@ var model = (function () {
 	 * Download data for a game from the API
 	 * @param gameid The id of the game
 	 */
-	var addGameFromAPI = function(gameid) {
-		gamedata[gameid] = {
-			// TODO: make api call here
-			name: "Unknown game",
-			coverurl: "images/unknown.png"
-		}
+	var gameSearchAPI = function(searchQuery, callback) {
+		var url = "http://www.giantbomb.com/api/games/?api_key="+giantbomb.API_KEY+"&format=json&filter=name:"+searchQuery+",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit=7";
+
+		request(url, function (error, response, data) {
+			if (!error && response.statusCode == 200) {
+				data = JSON.parse(data);
+				if (data.results.length == 0) {
+					callback({
+						status: 'empty',
+						data: []
+					});
+				} else {
+					for (var i=0; i < data.results.length; i++) {
+						if (!data.results[i].image)
+							continue;
+
+						gamedata[data.results[i].id] = {
+							name: data.results[i].name,
+							image: data.results[i].image.icon_url
+						}
+					}
+					callback({
+						status: 'ok',
+						data: data.results
+					});
+				}
+			} else if (error) {
+				console.log("gameSearchAPI failed (query: "+searchQuery+")");
+			}
+		});
+	};
+
+	/**
+	 * Download data for a game from the API
+	 * @param gameid The id of the game
+	 */
+	var addGameByIdAPI = function(gameid, callback) {
+		var url = "http://www.giantbomb.com/api/game/"+gameid+"/?api_key="+giantbomb.API_KEY+"&format=json&field_list=id,name,image";
+		console.log("api requesting for id = "+gameid);
+		request(url, function (error, response, data) {
+			if (!error && response.statusCode == 200) {
+				data = JSON.parse(data);
+				gamedata[data.results.id] = {
+					image: data.results.image.icon_url,
+					name: data.results.name
+				};
+				callback();
+			} else if (error) {
+				console.log("addGameByIdAPI failed (gameid: "+gameid+")");
+			}
+
+		});
 	};
 
 	/**
@@ -376,7 +425,7 @@ var model = (function () {
 		userdata[name].games[gameid] = {
 			id: gameid,
 			name: getGame(gameid).name,
-			coverurl: getGame(gameid).coverurl
+			image: getGame(gameid).image
 		}
 	};
 
@@ -410,7 +459,9 @@ var model = (function () {
 		getTimeline: getTimeline,
 		addGame: addGame,
 		copyGame: copyGame,
-		removeGame: removeGame
+		removeGame: removeGame,
+		gameSearchAPI: gameSearchAPI,
+		addGameByIdAPI: addGameByIdAPI
 	};
 
 }());

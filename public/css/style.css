@@ -62,13 +62,13 @@ div#chat {
 	box-shadow: 0px 0px 25px #444;
     position: absolute;
     width: 400px;
-    height: 250px;
+    /*height: 250px;*/
     display: none;
     background-color: white;
     text-align: center;
 
     /* center it ? */
-    top: 50%;
+    top: 30%;
     left: 50%;
     margin-left: -200px;
     margin-top: -125px;
@@ -118,6 +118,10 @@ div#chat {
 }
 .image-their:hover {
     background-image:url(../images/hover_copy.png);
+}
+
+.searchresults:hover {
+    opacity: 0.5;
 }
 
 .timeline-highlighted  { background-color: #9787BE }

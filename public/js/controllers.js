@@ -1,6 +1,6 @@
 /**
  * This controller handles everything client-side at the moment.
- * @Authors Magnus Olsson, Richard Nysäter, Jacob Norlin
+ * @Authors Magnus Olsson, Richard Nysï¿½ter, Jacob Norlin
  */
 
 'use strict';
@@ -10,6 +10,11 @@
 app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 	var MAX_MESSAGE_LENGTH = 1000;
+
+	$scope.searchresults = {
+		status: '',
+		data: []
+	}
 
 	// Socket listeners
 	// ================
@@ -107,6 +112,13 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	});
 
 	/**
+	 *	Receive the search results from server (as list)
+	 */
+	socket.on('game:searchresults', function (results) {
+		$scope.searchresults = results;
+	});
+
+	/**
 	 *	Update the list of games with a new game for a user
 	 */
 	socket.on('game:add', function (data) {
@@ -125,6 +137,14 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 			console.log("tried to remove gamedata that didnt exist.");
 
 		delete $scope.userdata[data.name].games[data.gameid];
+	});
+
+
+	/**
+	 *	Receive the search results data from the server
+	 */
+	socket.on('search:results', function (data) {
+		$scope.searchresults = data;
 	});
 
 	// Private helpers
@@ -243,14 +263,30 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	$scope.togglePopup = function() {
 		$(".overlay, .popup").fadeToggle(100);
 		$("#searchbox").focus();
+		$scope.searchresults = [];
 	};
 
 	/**
 	 * Add a new game to the user's game list
 	 */
 	$scope.submitGameSearch = function() {
-		socket.emit('game:add', $scope.searchterm);
+		$scope.searchresults = {
+			status: 'loading',
+			data: []
+		};
+		socket.emit('game:search', $scope.searchterm);
 		$scope.searchterm = '';
+	};
+
+	/**
+	 * Add a new game to the user's game list
+	 */
+	$scope.selectGame = function(gameid) {
+		socket.emit('game:add', gameid);
+		$scope.searchresults = {
+			status: '',
+			data: []
+		};
 	};
 
 	/**
