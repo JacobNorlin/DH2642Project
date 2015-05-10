@@ -7,12 +7,22 @@
 
 /* Controllers */
 
-app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
+app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParams, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 	var MAX_MESSAGE_LENGTH = 1000;
 
 	// Socket listeners
 	// ================
+
+
+  	var roomId = $location.absUrl().split('/')[4];
+
+  	//console.log(socket)
+  	var nsp;
+
+  	socket.emit('join:room', roomId, function(reply){
+  		
+  	})
 
 	/**
 	 * Send back the data from the cookies
@@ -22,7 +32,8 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 			callback({
 				name: $cookieStore.get("name"),
 				games: $cookieStore.get("games"),
-				timeline: $cookieStore.get("timeline")
+				timeline: $cookieStore.get("timeline"),
+				roomId: roomId
 			})
 		} else {
 			callback(false);
@@ -33,6 +44,7 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	 * Initialize the scope
 	 */
 	socket.on('init', function (data) {
+
 		$scope.name = data.name;
 		$scope.userdata = data.userdata;
 		$scope.id = data.userdata[data.name].id;

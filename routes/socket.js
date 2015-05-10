@@ -17,11 +17,13 @@ module.exports = function (io) {
 
 		console.log("Someone connected!");
 
-		// socket.emit('join:room', 
-		// 	 {
-		// 	 	roomId: 1
-		// 	 }
-		// })
+		var nsp;
+
+		socket.on('join:room', function(roomId, callback) {
+			nsp = '/'+roomId;
+			socket.join(nsp);			
+			callback(true);
+		})
 
 		/**
 		 *	Check if user has existing data in a cookie
@@ -62,7 +64,7 @@ module.exports = function (io) {
 		 *	Notify other clients that a new user has joined
  		 */
 		var newJoin = function() {
-			socket.broadcast.emit('user:join', {
+			socket.broadcast.to(nsp).emit('user:join', {
 					name: name,
 					data: model.getUserData()[name]
 				}
@@ -73,8 +75,9 @@ module.exports = function (io) {
 		 * Broadcast a user's message to other users
 		 */
 		socket.on('send:message', function (data) {
+			console.log(data);
 			if(data.message.length <= MAX_MESSAGE_LENGTH) {
-				io.sockets.emit('send:message', {
+				io.to(nsp).emit('send:message', {
 					user: name,
 					text: data.message,
 					time: getTime()
@@ -177,8 +180,9 @@ module.exports = function (io) {
 var Rooms = (function(){
 	var rooms = {}
 
-	var createNewRoom = function (roomId){
-		rooms[roomId] = new Room(roomId);
+	var createNewRoom = function (nsp){
+		rooms[roomId] = new model(roomId);
+		//io.of('/'+roomId)
 	}
 
 	var roomExists = function(roomId) {
