@@ -14,6 +14,7 @@ app.config(['$routeProvider', '$locationProvider',
 	        })
 
 	        console.log($routeProvider)
+	        $locationProvider.html5Mode(true);
 	    }
 	       
 	  ]

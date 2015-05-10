@@ -17,12 +17,17 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 
   	var roomId = $location.absUrl().split('/')[4];
 
-  	//console.log(socket)
+  	console.log(roomId)
   	var nsp;
+  	if(roomId){
+	  	socket.emit('join:room', roomId, function(reply){
 
-  	socket.emit('join:room', roomId, function(reply){
-  		
-  	})
+	  	})
+  	}else{
+  		socket.emit('create:room', '', function(reply){
+  			$location.path('/room/'+reply.roomId)
+  		})
+  	}
 
 	/**
 	 * Send back the data from the cookies
