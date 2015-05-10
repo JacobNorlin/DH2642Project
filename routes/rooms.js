@@ -1,3 +1,4 @@
+'use strict';
 /**
  * The model stores data
  * @type {{claimName, freeName, getUserData, getName, getGuestName, addTime, removeTime, renameTimeline, getTimeline, addGame, copyGame, removeGame}}
@@ -6,9 +7,8 @@
 
 
 var exports = module.exports = {};
-var giantbomb = require('../config.js')
-var request = require('request')
-
+var giantbomb = require('../config.js').giantbomb;
+var request = require('request');
 
 
 var rooms = {}	
@@ -230,9 +230,9 @@ var Room = function () {
 	 * @param gameid The id of the game
 	 */
 	var gameSearchAPI = function(searchQuery, callback) {
-		console.log(searchQuery)
-		var url = "http://www.giantbomb.com/api/games/?api_key="+giantbomb.API_KEY+"&format=json&filter=name:"+searchQuery+",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit=7";
 
+		var url = "http://www.giantbomb.com/api/games/?api_key="+giantbomb.API_KEY+"&format=json&filter=name:"+searchQuery+",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit=7";
+		console.log(url)
 		request(url, function (error, response, data) {
 			if (!error && response.statusCode == 200) {
 				data = JSON.parse(data);

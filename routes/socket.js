@@ -57,7 +57,9 @@ module.exports = function (io, rooms) {
 
 				if (reply.games) {
 					reply.games.forEach(function(gameid) {
-						currentRoom.addGame(name, gameid);
+						currentRoom.addGame(name, gameid, function(){
+							console.log("added cookie game "+gameid);
+						});
 					});
 				}
 
@@ -161,11 +163,12 @@ module.exports = function (io, rooms) {
 		 * User added a new game
 		 */
 		socket.on('game:add', function (gameid) {
-			currentRoom.addGame(name, gameid);
-			io.to(nsp).emit('game:add', {
-				name: name,
-				gameid: gameid,
-				gamedata: currentRoom.getUserData()[name].games[gameid]
+			currentRoom.addGame(name, gameid, function() {
+				io.sockets.emit('game:add', {
+					name: name,
+					gameid: gameid,
+					gamedata: currentRoom.getUserData()[name].games[gameid]
+				});
 			});
 		});
 
