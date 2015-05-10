@@ -6,7 +6,7 @@ var app = angular.module('myApp', ['ngCookies','xeditable', 'ngResource', 'ngRou
 app.config(['$routeProvider', '$locationProvider',
 	    function($routeProvider, $locationProvider) {
 	      
-	      	$routeProvider.when('/room/:roomId', {
+	      	$routeProvider.when('/:roomId', {
 	          templateUrl: 'index.html',
 	          controller: 'AppCtrl' }).
 	        otherwise({

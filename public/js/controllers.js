@@ -15,7 +15,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	// ================
 
 
-  	var roomId = $location.absUrl().split('/')[4];
+  	var roomId = $location.absUrl().split('/')[3];
 
   	console.log(roomId)
   	var nsp;
@@ -25,7 +25,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	  	})
   	}else{
   		socket.emit('create:room', '', function(reply){
-  			$location.path('/room/'+reply.roomId)
+  			$location.path('/'+reply.roomId)
   		})
   	}
 
