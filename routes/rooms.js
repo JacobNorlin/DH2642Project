@@ -6,6 +6,9 @@
 
 
 var exports = module.exports = {};
+var giantbomb = require('../config.js')
+var request = require('request')
+
 
 
 var rooms = {}	
@@ -49,24 +52,6 @@ var Room = function () {
 	var userdata = {};
 	var gamedata = {};
 
-	// Test data please ignore
-	gamedata["csgo"] = {
-		coverurl: "/images/csgo_thumb.jpg",
-		name: "Counter-Strike: Global Offensive"
-	};
-	gamedata["quake3"] = {
-		coverurl: "/images/quake3_thumb.jpg",
-		name: "Quake 3 Arena"
-	};
-	gamedata["l4d"] = {
-		coverurl: "/images/l4d_thumb.jpg",
-		name: "Left 4 Dead"
-	};
-	gamedata["dota2"] = {
-		coverurl: "/images/dota2_thumb.jpg",
-		name: "Dota 2"
-	};
-
 	/**
 	 * If name is available, create a new user with that name
 	 * @param name The name the user wants
@@ -109,7 +94,7 @@ var Room = function () {
 			name = originalName + nextNum;
 
 			nextNum += 1;
-			if(name.length > MAX_USERNAME_LENGTH) // If name is too long we give him guest name instead
+			if(name.length > exports.MAX_USERNAME_LENGTH) // If name is too long we give him guest name instead
 				name = INITIAL_GUEST_NAME;
 		}
 		return name;
@@ -120,7 +105,6 @@ var Room = function () {
 	 * @returns {*} A guest name
 	 */
 	var getGuestName = function () {
-		console.log(userdata)
 		return getName(INITIAL_GUEST_NAME);
 	};
 
@@ -211,10 +195,16 @@ var Room = function () {
 	 * @param name The username of the user
 	 * @param gameid The id of the game
 	 */
-	var addGame = function(name, gameid) {
-		if (!getGame(gameid))
-			addGameFromAPI(gameid);
-		addGameToUser(name, gameid);
+	var addGame = function(name, gameid, callback) {
+		if (!getGame(gameid)) {
+			addGameByIdAPI(gameid, function(){
+				addGameToUser(name, gameid);
+				callback();
+			});
+		} else {
+			addGameToUser(name, gameid);
+			callback();
+		}
 	};
 
 	/**
@@ -239,12 +229,59 @@ var Room = function () {
 	 * Download data for a game from the API
 	 * @param gameid The id of the game
 	 */
-	var addGameFromAPI = function(gameid) {
-		gamedata[gameid] = {
-			// TODO: make api call here
-			name: "Unknown game",
-			coverurl: "images/unknown.png"
-		}
+	var gameSearchAPI = function(searchQuery, callback) {
+		console.log(searchQuery)
+		var url = "http://www.giantbomb.com/api/games/?api_key="+giantbomb.API_KEY+"&format=json&filter=name:"+searchQuery+",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit=7";
+
+		request(url, function (error, response, data) {
+			if (!error && response.statusCode == 200) {
+				data = JSON.parse(data);
+				if (data.results.length == 0) {
+					callback({
+						status: 'empty',
+						data: []
+					});
+				} else {
+					for (var i=0; i < data.results.length; i++) {
+						if (!data.results[i].image)
+							continue;
+
+						gamedata[data.results[i].id] = {
+							name: data.results[i].name,
+							image: data.results[i].image.icon_url
+						}
+					}
+					callback({
+						status: 'ok',
+						data: data.results
+					});
+				}
+			} else if (error) {
+				console.log("gameSearchAPI failed (query: "+searchQuery+")");
+			}
+		});
+	};
+
+	/**
+	 * Download data for a game from the API
+	 * @param gameid The id of the game
+	 */
+	var addGameByIdAPI = function(gameid, callback) {
+		var url = "http://www.giantbomb.com/api/game/"+gameid+"/?api_key="+giantbomb.API_KEY+"&format=json&field_list=id,name,image";
+		console.log("api requesting for id = "+gameid);
+		request(url, function (error, response, data) {
+			if (!error && response.statusCode == 200) {
+				data = JSON.parse(data);
+				gamedata[data.results.id] = {
+					image: data.results.image.icon_url,
+					name: data.results.name
+				};
+				callback();
+			} else if (error) {
+				console.log("addGameByIdAPI failed (gameid: "+gameid+")");
+			}
+
+		});
 	};
 
 	/**
@@ -256,7 +293,7 @@ var Room = function () {
 		userdata[name].games[gameid] = {
 			id: gameid,
 			name: getGame(gameid).name,
-			coverurl: getGame(gameid).coverurl
+			image: getGame(gameid).image
 		}
 	};
 
@@ -290,7 +327,9 @@ var Room = function () {
 		getTimeline: getTimeline,
 		addGame: addGame,
 		copyGame: copyGame,
-		removeGame: removeGame
+		removeGame: removeGame,
+		gameSearchAPI: gameSearchAPI,
+		addGameByIdAPI: addGameByIdAPI
 	};
 
 }

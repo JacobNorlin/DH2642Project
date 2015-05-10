@@ -144,6 +144,13 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		delete $scope.userdata[data.name].games[data.gameid];
 	});
 
+	/**
+	 *	Receive the search results from server (as list)
+	 */
+	socket.on('game:searchresults', function (results) {
+		$scope.searchresults = results;
+	});
+
 	// Private helpers
 	// ===============
 
@@ -266,8 +273,23 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	 * Add a new game to the user's game list
 	 */
 	$scope.submitGameSearch = function() {
-		socket.emit('game:add', $scope.searchterm);
+		$scope.searchresults = {
+			status: 'loading',
+			data: []
+		};
+		socket.emit('game:search', $scope.searchterm);
 		$scope.searchterm = '';
+	};
+
+	/**
+	 * Add a new game to the user's game list
+	 */
+	$scope.selectGame = function(gameid) {
+		socket.emit('game:add', gameid);
+		$scope.searchresults = {
+			status: '',
+			data: []
+		};
 	};
 
 	/**

@@ -49,7 +49,7 @@
 								<td class="vert-align" style="width: 20%"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
 								<td style="height: 59px">
                                     <div class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, data) in userdata[name].games">
-                                        <img ng-src="{{data.coverurl}}" title="{{data.name}}">
+                                        <img ng-src="{{data.image}}" title="{{data.name}}">
                                         <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
 
                                     </div>
@@ -65,7 +65,7 @@
 								<td class="vert-align">{{user}}</td>
 								<td style="height: 59px">
                                     <div  class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, gamedata) in userdata[user].games">
-                                        <img ng-src="{{gamedata.coverurl}}" title="{{gamedata.name}}">&nbsp
+                                        <img ng-src="{{gamedata.image}}" title="{{gamedata.name}}">&nbsp
                                         <a ng-click="copyGame(user, gameid)" title="{{gamedata.name}}" href="#" class="image-their"></a>
                                     </div>
                                 </td>
@@ -119,7 +119,6 @@
 								<td></td>
                                 <td ng-repeat="time in times" ng-class="userdata[user].timeline[time] ? 'timeline-highlighted'+data.id%7 : ''"></td>
 							</tr>
-
 						</table>
 					</div>
 				</div>
@@ -130,11 +129,23 @@
                 <button ng-click="togglePopup()" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
                 <br>
                 <span style="font-size: 1.15em; font-weight: bold">ADD A GAME</span><br>
-                <br><br><br>
-                (try: csgo, l4d, dota2, quake3)<br>
-                <form ng-submit="submitGameSearch()">
-                    <input id="searchbox" type="text" name="searchbox" ng-model="searchterm" size="40">
-                </form>
+                <br><br>
+                 <form ng-submit="submitGameSearch()">
+                     <input id="searchbox" type="text" name="searchbox" ng-model="searchterm" size="40">
+	                    <table class="table">
+	                        <tr class="searchresults" ng-repeat="result in searchresults.data" ng-click="selectGame(result.id)">
+	                            <td><img ng-src="{{result.image.icon_url}}" style="width: 40px; height: 40px;" title="{{result.name}}"></td>
+	                            <td class="vert-align text-left">{{result.name}}</td>
+	                        </tr>
+	                        <tr ng-if="searchresults.status == 'loading'">
+	                            <td>Loading..</td>
+	                        </tr>
+	                        <tr ng-if="searchresults.status == 'empty'">
+	                            <td>No search results.</td>
+	                        </tr>
+	
+	                    </table>
+
                 <br>
             </div>
 		</div>

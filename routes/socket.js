@@ -147,6 +147,15 @@ module.exports = function (io, rooms) {
 			io.to(nsp).emit('timeline:edit:remove', data);
 		});
 
+		/**
+		 * User sends search request to server
+		 */
+		socket.on('game:search', function (searchquery) {
+			currentRoom.gameSearchAPI(searchquery, function(results) {
+				io.sockets.emit('game:searchresults', results);
+			});
+		});
+
 
 		/**
 		 * User added a new game
