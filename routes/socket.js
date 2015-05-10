@@ -21,7 +21,8 @@ module.exports = function (io) {
 
 		socket.on('join:room', function(roomId, callback) {
 			nsp = '/'+roomId;
-			socket.join(nsp);			
+			socket.join(nsp);	
+			Rooms.createNewRoom(nsp);		
 			callback(true);
 		})
 
@@ -64,7 +65,7 @@ module.exports = function (io) {
 		 *	Notify other clients that a new user has joined
  		 */
 		var newJoin = function() {
-			socket.broadcast.to(nsp).emit('user:join', {
+			io.to(nsp).emit('user:join', {
 					name: name,
 					data: model.getUserData()[name]
 				}
@@ -95,7 +96,7 @@ module.exports = function (io) {
 				model.renameTimeline(oldName, name);
 				model.freeName(oldName);
 
-				io.sockets.emit('change:name', {
+				io.to(nsp).emit('change:name', {
 					oldName: oldName,
 					newName: name
 				});
@@ -112,7 +113,7 @@ module.exports = function (io) {
 		 */
 		socket.on('timeline:edit:add', function (data) {
 			model.addTime(name, data.time);
-			io.sockets.emit('timeline:edit:add', data);
+			io.to(nsp).emit('timeline:edit:add', data);
 		});
 
 		/**
@@ -120,7 +121,7 @@ module.exports = function (io) {
 		 */
 		socket.on('timeline:edit:remove', function (data) {
 			model.removeTime(name, data.time);
-			io.sockets.emit('timeline:edit:remove', data);
+			io.to(nsp).emit('timeline:edit:remove', data);
 		});
 
 
@@ -129,7 +130,7 @@ module.exports = function (io) {
 		 */
 		socket.on('game:add', function (gameid) {
 			model.addGame(name, gameid);
-			io.sockets.emit('game:add', {
+			io.to(nsp).emit('game:add', {
 				name: name,
 				gameid: gameid,
 				gamedata: model.getUserData()[name].games[gameid]
@@ -141,7 +142,7 @@ module.exports = function (io) {
 		 */
 		socket.on('game:copy', function (gameid) {
 			model.copyGame(name, gameid);
-			socket.broadcast.emit('game:add', {
+			io.to(nsp).emit('game:add', {
 				name: name,
 				gameid: gameid,
 				gamedata: model.getUserData()[name].games[gameid]
@@ -153,7 +154,7 @@ module.exports = function (io) {
 		 */
 		socket.on('game:remove', function (gameid) {
 			model.removeGame(name, gameid);
-			socket.broadcast.emit('game:remove', {
+			io.to(nsp).emit('game:remove', {
 				name: name,
 				gameid: gameid
 			});
@@ -163,7 +164,7 @@ module.exports = function (io) {
 		 * Clean up when a user leaves, and broadcast it to other users
 		 */
 		socket.on('disconnect', function () {
-			socket.broadcast.emit('user:left', {
+			io.to(nsp).emit('user:left', {
 				name: name
 			});
 			model.freeName(name);
@@ -180,8 +181,8 @@ module.exports = function (io) {
 var Rooms = (function(){
 	var rooms = {}
 
-	var createNewRoom = function (nsp){
-		rooms[roomId] = new model(roomId);
+	var createNewRoom = function (roomId){
+		//rooms[roomId] = new model(roomId);
 		//io.of('/'+roomId)
 	}
 
