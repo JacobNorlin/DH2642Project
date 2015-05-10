@@ -16,16 +16,21 @@ var rooms = {}
 exports.MAX_USERNAME_LENGTH = 30;
 exports.MAX_MESSAGE_LENGTH = 1000;
 
+/**
+ * Creates a new Room object and stores it in the rooms object
+ * @param roomId The id of the room*/
 exports.createNewRoom = function (roomId){
-	console.log("created room")
 	rooms[roomId] = new Room();
 }
-
+/**
+ * Checks if the room is created
+ * @param roomId The id of the room
+ * @returns {boolean} True if the room exists, otherwise false
+*/
 exports.roomExists = function(roomId) {
 	for(var room in rooms){
 		console.log(room == roomId )
 		if(room == roomId){
-			console.log("room exists")
 			return true;
 		}
 	}
@@ -33,10 +38,19 @@ exports.roomExists = function(roomId) {
 	return false;
 }
 
+/**
+ * Returns a room object
+ * @param roomId The id of the room
+ * @returns {Room} Object representing all the data inside a room
+*/
 exports.getRoom = function(roomId) {
 	return rooms[roomId];
 }
 
+/**
+ * Generates a random alphanumeric string of 8 characters
+ * @returns {string} A random alphanumeric string
+*/
 exports.generateRoomId = function(){
 	function randomString(length, chars) {
 	    var result = '';

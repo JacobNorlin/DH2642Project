@@ -14,11 +14,12 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	// Socket listeners
 	// ================
 
-
+	//Fulhack, borde använda angular routern men den cpar så jag kan inte
   	var roomId = $location.absUrl().split('/')[3];
 
-  	console.log(roomId)
   	var nsp;
+
+  	//Depending on if the url(joining a room or just wanting a random one), will tell server to create or join that room
   	if(roomId){
 	  	socket.emit('join:room', roomId, function(reply){
 

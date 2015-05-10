@@ -11,8 +11,6 @@ module.exports = function (io, rooms) {
 
 
 
-	//var Rooms = require('rooms.js')
-	console.log(rooms);
 
 	/**
 	 * Executes when a new connection is established
@@ -26,17 +24,19 @@ module.exports = function (io, rooms) {
 		var nsp;
 		var currentRoom;
 
+		/**
+		 *	Will assign the socket to the given roomId. Since the rest of the code depends on this there will be race conditions, not sure how to fix.
+		 */
 		socket.on('join:room', function(roomId, callback) {
 			nsp = roomId;
 			socket.join(nsp);	
-			if(rooms.roomExists(nsp) == false){
-
-				
-			}
 			currentRoom = rooms.getRoom(nsp);
 			callback(true);
 		})
 
+		/**
+		 *	Will create a room of the given id and assign the socket to that socket room. Since the rest of the code depends on this there will be race conditions, not sure how to fix.
+		 */
 		socket.on('create:room', function(data, callback){
 			nsp = rooms.generateRoomId();
 			socket.join(nsp)
