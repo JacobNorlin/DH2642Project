@@ -31,6 +31,7 @@ module.exports = function (io, rooms) {
 			nsp = roomId;
 			socket.join(nsp);	
 			currentRoom = rooms.getRoom(nsp);
+			setAllListeners();
 			callback(true);
 		})
 
@@ -42,168 +43,175 @@ module.exports = function (io, rooms) {
 			socket.join(nsp)
 			rooms.createNewRoom(nsp);
 			currentRoom = rooms.getRoom(nsp);
+			setAllListeners();
 			callback({
 				roomId:nsp
 			});
 		})
 
-		/**
-		 *	Check if user has existing data in a cookie
-		 */
-		socket.emit('cookies:get', '', function(reply) {
+		//This should fix some race conditions, its not pretty but muh concurrency. Some data loss might occur
+		var setAllListeners = function() {
+			/**
+			 *	Check if user has existing data in a cookie
+			 */
+			socket.emit('cookies:get', '', function(reply) {
 
-			if (reply) {
-				name = currentRoom.getName(reply.name);
+				if (reply) {
+					name = currentRoom.getName(reply.name);
 
-				if (reply.games) {
-					reply.games.forEach(function(gameid) {
-						currentRoom.addGame(name, gameid, function(){
-							console.log("added cookie game "+gameid);
+					if (reply.games) {
+						reply.games.forEach(function(gameid) {
+							currentRoom.addGame(name, gameid, function(){
+								console.log("added cookie game "+gameid);
+							});
 						});
-					});
-				}
+					}
 
-				if (reply.timeline) {
-					reply.timeline.forEach(function(time) {
-						currentRoom.addTime(name, time);
-					});
+					if (reply.timeline) {
+						reply.timeline.forEach(function(time) {
+							currentRoom.addTime(name, time);
+						});
+					}
+				} else {
+					name = currentRoom.getGuestName();
 				}
-			} else {
-				name = currentRoom.getGuestName();
-			}
-			init();
-		});
-
-		/**
-		 * Send the new user their name and a list of the users
-		 */
-		var init = function() {
-			console.log(currentRoom.getUserData())
-			socket.emit('init', {
-				name: name,
-				userdata: currentRoom.getUserData()
+				init();
 			});
-			newJoin();
-		};
 
-		/**
-		 *	Notify other clients that a new user has joined
- 		 */
-		var newJoin = function() {
-			io.to(nsp).emit('user:join', {
+			/**
+			 * Send the new user their name and a list of the users
+			 */
+			var init = function() {
+				console.log(currentRoom.getUserData())
+				socket.emit('init', {
 					name: name,
-					data: currentRoom.getUserData()[name]
+					userdata: currentRoom.getUserData()
+				});
+				newJoin();
+			};
+
+			/**
+			 *	Notify other clients that a new user has joined
+	 		 */
+			var newJoin = function() {
+				io.to(nsp).emit('user:join', {
+						name: name,
+						data: currentRoom.getUserData()[name]
+					}
+				);
+			};
+
+			/**
+			 * Broadcast a user's message to other users
+			 */
+			socket.on('send:message', function (data) {
+				console.log(rooms);
+				if(data.message.length <= rooms.MAX_MESSAGE_LENGTH) {
+					io.to(nsp).emit('send:message', {
+						user: name,
+						text: data.message,
+						time: getTime()
+					});
 				}
-			);
-		};
-
-		/**
-		 * Broadcast a user's message to other users
-		 */
-		socket.on('send:message', function (data) {
-			console.log(rooms);
-			if(data.message.length <= rooms.MAX_MESSAGE_LENGTH) {
-				io.to(nsp).emit('send:message', {
-					user: name,
-					text: data.message,
-					time: getTime()
-				});
-			}
-		});
-
-		/**
-		 * Validate a user's name change, and broadcast it on success
-		 */
-		socket.on('change:name', function (data, callback) {
-			if (currentRoom.claimName(data.name)) {
-				var oldName = name;
-				name = data.name;
-				currentRoom.renameTimeline(oldName, name);
-				currentRoom.freeName(oldName);
-
-				io.to(nsp).emit('change:name', {
-					oldName: oldName,
-					newName: name
-				});
-
-				callback(true);
-			} else {
-				callback(false);
-			}
-		});
-
-
-		/**
-		 * User added a new time to their timeline
-		 */
-		socket.on('timeline:edit:add', function (data) {
-			currentRoom.addTime(name, data.time);
-			io.to(nsp).emit('timeline:edit:add', data);
-		});
-
-		/**
-		 * User removed a time from their timeline
-		 */
-		socket.on('timeline:edit:remove', function (data) {
-			currentRoom.removeTime(name, data.time);
-			io.to(nsp).emit('timeline:edit:remove', data);
-		});
-
-		/**
-		 * User sends search request to server
-		 */
-		socket.on('game:search', function (searchquery) {
-			currentRoom.gameSearchAPI(searchquery, function(results) {
-				io.sockets.emit('game:searchresults', results);
 			});
-		});
+
+			/**
+			 * Validate a user's name change, and broadcast it on success
+			 */
+			socket.on('change:name', function (data, callback) {
+				if (currentRoom.claimName(data.name)) {
+					var oldName = name;
+					name = data.name;
+					currentRoom.renameTimeline(oldName, name);
+					currentRoom.freeName(oldName);
+
+					io.to(nsp).emit('change:name', {
+						oldName: oldName,
+						newName: name
+					});
+
+					callback(true);
+				} else {
+					callback(false);
+				}
+			});
 
 
-		/**
-		 * User added a new game
-		 */
-		socket.on('game:add', function (gameid) {
-			currentRoom.addGame(name, gameid, function() {
-				io.sockets.emit('game:add', {
+			/**
+			 * User added a new time to their timeline
+			 */
+			socket.on('timeline:edit:add', function (data) {
+				currentRoom.addTime(name, data.time);
+				io.to(nsp).emit('timeline:edit:add', data);
+			});
+
+			/**
+			 * User removed a time from their timeline
+			 */
+			socket.on('timeline:edit:remove', function (data) {
+				currentRoom.removeTime(name, data.time);
+				io.to(nsp).emit('timeline:edit:remove', data);
+			});
+
+			/**
+			 * User sends search request to server
+			 */
+			socket.on('game:search', function (searchquery) {
+				currentRoom.gameSearchAPI(searchquery, function(results) {
+					io.sockets.emit('game:searchresults', results);
+				});
+			});
+
+
+			/**
+			 * User added a new game
+			 */
+			socket.on('game:add', function (gameid) {
+				currentRoom.addGame(name, gameid, function() {
+					io.sockets.emit('game:add', {
+						name: name,
+						gameid: gameid,
+						gamedata: currentRoom.getUserData()[name].games[gameid]
+					});
+				});
+			});
+
+			/**
+			 * User copied a game
+			 */
+			socket.on('game:copy', function (gameid) {
+				currentRoom.copyGame(name, gameid);
+				io.to(nsp).emit('game:add', {
 					name: name,
 					gameid: gameid,
 					gamedata: currentRoom.getUserData()[name].games[gameid]
 				});
 			});
-		});
 
-		/**
-		 * User copied a game
-		 */
-		socket.on('game:copy', function (gameid) {
-			currentRoom.copyGame(name, gameid);
-			io.to(nsp).emit('game:add', {
-				name: name,
-				gameid: gameid,
-				gamedata: currentRoom.getUserData()[name].games[gameid]
+			/**
+			 * User removed a game
+			 */
+			socket.on('game:remove', function (gameid) {
+				currentRoom.removeGame(name, gameid);
+				io.to(nsp).emit('game:remove', {
+					name: name,
+					gameid: gameid
+				});
 			});
-		});
 
-		/**
-		 * User removed a game
-		 */
-		socket.on('game:remove', function (gameid) {
-			currentRoom.removeGame(name, gameid);
-			io.to(nsp).emit('game:remove', {
-				name: name,
-				gameid: gameid
+			/**
+			 * Clean up when a user leaves, and broadcast it to other users
+			 */
+			socket.on('disconnect', function () {
+				io.to(nsp).emit('user:left', {
+					name: name
+				});
+				currentRoom.freeName(name);
 			});
-		});
 
-		/**
-		 * Clean up when a user leaves, and broadcast it to other users
-		 */
-		socket.on('disconnect', function () {
-			io.to(nsp).emit('user:left', {
-				name: name
-			});
-			currentRoom.freeName(name);
-		});
+		}
+
+		
 
 	})
 };
