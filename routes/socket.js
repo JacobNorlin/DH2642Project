@@ -11,6 +11,7 @@ module.exports = function (io) {
 
 	/**
 	 * Executes when a new connection is established
+	 * Pretty sure this is a closure, which is convenient
 	 */
 	io.sockets.on('connection', function (socket) {
 		var name = '';
@@ -18,11 +19,16 @@ module.exports = function (io) {
 		console.log("Someone connected!");
 
 		var nsp;
+		var currentRoom;
 
 		socket.on('join:room', function(roomId, callback) {
 			nsp = '/'+roomId;
 			socket.join(nsp);	
-			Rooms.createNewRoom(nsp);		
+			if(Rooms.roomExists(nsp) == false){
+
+				Rooms.createNewRoom(nsp);	
+			}
+			currentRoom = Rooms.getRoom(nsp);
 			callback(true);
 		})
 
@@ -30,22 +36,23 @@ module.exports = function (io) {
 		 *	Check if user has existing data in a cookie
 		 */
 		socket.emit('cookies:get', '', function(reply) {
+
 			if (reply) {
-				name = model.getName(reply.name);
+				name = currentRoom.getName(reply.name);
 
 				if (reply.games) {
 					reply.games.forEach(function(gameid) {
-						model.addGame(name, gameid);
+						currentRoom.addGame(name, gameid);
 					});
 				}
 
 				if (reply.timeline) {
 					reply.timeline.forEach(function(time) {
-						model.addTime(name, time);
+						currentRoom.addTime(name, time);
 					});
 				}
 			} else {
-				name = model.getGuestName();
+				name = currentRoom.getGuestName();
 			}
 			init();
 		});
@@ -54,9 +61,10 @@ module.exports = function (io) {
 		 * Send the new user their name and a list of the users
 		 */
 		var init = function() {
+			console.log(currentRoom.getUserData())
 			socket.emit('init', {
 				name: name,
-				userdata: model.getUserData()
+				userdata: currentRoom.getUserData()
 			});
 			newJoin();
 		};
@@ -67,7 +75,7 @@ module.exports = function (io) {
 		var newJoin = function() {
 			io.to(nsp).emit('user:join', {
 					name: name,
-					data: model.getUserData()[name]
+					data: currentRoom.getUserData()[name]
 				}
 			);
 		};
@@ -90,11 +98,11 @@ module.exports = function (io) {
 		 * Validate a user's name change, and broadcast it on success
 		 */
 		socket.on('change:name', function (data, callback) {
-			if (model.claimName(data.name)) {
+			if (currentRoom.claimName(data.name)) {
 				var oldName = name;
 				name = data.name;
-				model.renameTimeline(oldName, name);
-				model.freeName(oldName);
+				currentRoom.renameTimeline(oldName, name);
+				currentRoom.freeName(oldName);
 
 				io.to(nsp).emit('change:name', {
 					oldName: oldName,
@@ -112,7 +120,7 @@ module.exports = function (io) {
 		 * User added a new time to their timeline
 		 */
 		socket.on('timeline:edit:add', function (data) {
-			model.addTime(name, data.time);
+			currentRoom.addTime(name, data.time);
 			io.to(nsp).emit('timeline:edit:add', data);
 		});
 
@@ -120,7 +128,7 @@ module.exports = function (io) {
 		 * User removed a time from their timeline
 		 */
 		socket.on('timeline:edit:remove', function (data) {
-			model.removeTime(name, data.time);
+			currentRoom.removeTime(name, data.time);
 			io.to(nsp).emit('timeline:edit:remove', data);
 		});
 
@@ -129,11 +137,11 @@ module.exports = function (io) {
 		 * User added a new game
 		 */
 		socket.on('game:add', function (gameid) {
-			model.addGame(name, gameid);
+			currentRoom.addGame(name, gameid);
 			io.to(nsp).emit('game:add', {
 				name: name,
 				gameid: gameid,
-				gamedata: model.getUserData()[name].games[gameid]
+				gamedata: currentRoom.getUserData()[name].games[gameid]
 			});
 		});
 
@@ -141,11 +149,11 @@ module.exports = function (io) {
 		 * User copied a game
 		 */
 		socket.on('game:copy', function (gameid) {
-			model.copyGame(name, gameid);
+			currentRoom.copyGame(name, gameid);
 			io.to(nsp).emit('game:add', {
 				name: name,
 				gameid: gameid,
-				gamedata: model.getUserData()[name].games[gameid]
+				gamedata: currentRoom.getUserData()[name].games[gameid]
 			});
 		});
 
@@ -153,7 +161,7 @@ module.exports = function (io) {
 		 * User removed a game
 		 */
 		socket.on('game:remove', function (gameid) {
-			model.removeGame(name, gameid);
+			currentRoom.removeGame(name, gameid);
 			io.to(nsp).emit('game:remove', {
 				name: name,
 				gameid: gameid
@@ -167,7 +175,7 @@ module.exports = function (io) {
 			io.to(nsp).emit('user:left', {
 				name: name
 			});
-			model.freeName(name);
+			currentRoom.freeName(name);
 		});
 
 	})
@@ -182,23 +190,24 @@ var Rooms = (function(){
 	var rooms = {}
 
 	var createNewRoom = function (roomId){
-		//rooms[roomId] = new model(roomId);
-		//io.of('/'+roomId)
+		console.log("created room")
+		rooms[roomId] = new Room();
 	}
 
 	var roomExists = function(roomId) {
 		for(var room in rooms){
-			if(room.roomId == roomId){
+			console.log(room == roomId )
+			if(room == roomId){
+				console.log("room exists")
 				return true;
 			}
 		}
+
 		return false;
 	}
 
 	var getRoom = function(roomId) {
-		if(roomExists(roomId)){
-			return rooms[roomId];
-		}
+		return rooms[roomId];
 	}
 
 	return {
@@ -208,8 +217,7 @@ var Rooms = (function(){
 	}
 })();
 
-var model = (function (roomId) {
-	var roomId = roomId;
+var Room = function () {
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};
@@ -285,6 +293,7 @@ var model = (function (roomId) {
 	 * @returns {*} A guest name
 	 */
 	var getGuestName = function () {
+		console.log(userdata)
 		return getName(INITIAL_GUEST_NAME);
 	};
 
@@ -457,7 +466,7 @@ var model = (function (roomId) {
 		removeGame: removeGame
 	};
 
-}());
+}
 
 /**
  * Return the current time
