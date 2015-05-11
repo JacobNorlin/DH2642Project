@@ -16,6 +16,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 
 	//Fulhack, borde använda angular routern men den cpar så jag kan inte
   	var roomId = $location.absUrl().split('/')[3];
+  	console.log(roomId);
 
   	var nsp;
 

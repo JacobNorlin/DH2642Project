@@ -28,6 +28,7 @@ module.exports = function (io, rooms) {
 		 *	Will assign the socket to the given roomId. Since the rest of the code depends on this there will be race conditions, not sure how to fix.
 		 */
 		socket.on('join:room', function(roomId, callback) {
+
 			nsp = roomId;
 			socket.join(nsp);	
 			currentRoom = rooms.getRoom(nsp);

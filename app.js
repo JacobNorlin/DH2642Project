@@ -18,7 +18,7 @@ var socket = require('./routes/socket.js')(io, rooms);
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/:roomId/*', function(req, res) {
+app.get('/:roomId*$', function(req, res) {
 	console.log("roomId: "+req.params.roomId)
 	if(rooms.roomExists(req.params.roomId)){
 		res.sendFile('index.html', {root: __dirname+"/public"});
