@@ -38,7 +38,17 @@ exports.roomExists = function(roomId) {
 	return false;
 }
 
-
+exports.getNumberOfPlayersOfGame = function(gameid, room) {
+	var userData = room.getUserData();
+	var numPlayers = 0;
+	for(var user in userData){
+		console.log(userData[user], gameid);
+		if(userData[user].games[gameid]){
+			numPlayers++;
+		}
+	}
+	return numPlayers;
+}
 
 /**
  * Returns a room object

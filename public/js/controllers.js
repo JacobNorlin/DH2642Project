@@ -250,7 +250,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 
 	//Method for updating the min number of players for a gaem
 	$scope.numPlayerChange = function(gameid, name) {
-		socket.emit('numplayer:change', $scope.userdata[name]);
+		socket.emit('numplayer:change', {userdata: $scope.userdata[name], gameId: gameid});
 		saveToCookie();
 	}
 

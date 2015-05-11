@@ -166,7 +166,8 @@ module.exports = function (io, rooms) {
 			 * Store new number of min players
 			 */
 			socket.on('numplayer:change', function(data){
-				currentRoom.getUserData[data.name] = data;
+				currentRoom.getUserData[data.userdata.name] = data.userdata;
+				console.log(rooms.getNumberOfPlayersOfGame(data.gameId, currentRoom));
 			});
 
 			/**
