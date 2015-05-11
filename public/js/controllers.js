@@ -130,10 +130,12 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	socket.on('game:add', function (data) {
 		if ($scope.userdata[data.name].games[data.gameid]) // Game already exists
 			return;
+		data.gamedata.numPlayers = 0;
 
 		$scope.userdata[data.name].games[data.gameid] = data.gamedata;
 		saveToCookie();
 	});
+
 
 	/**
 	 *	Update the list of games with a removed game for a user
@@ -246,10 +248,17 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 
 	$scope.messages = [];
 
+	//Method for updating the min number of players for a gaem
+	$scope.numPlayerChange = function(gameid, name) {
+		socket.emit('numplayer:change', $scope.userdata[name]);
+		saveToCookie();
+	}
+
 	/**
 	 *	Send a message to the other users
 	 */
 	$scope.sendMessage = function () {
+		console.log($scope.userdata)
 		if ($scope.message.length == 0) {
 			return;
 		} else if($scope.message.length > MAX_MESSAGE_LENGTH)	{

@@ -38,6 +38,8 @@ exports.roomExists = function(roomId) {
 	return false;
 }
 
+
+
 /**
  * Returns a room object
  * @param roomId The id of the room

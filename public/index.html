@@ -48,11 +48,12 @@
 							<tr>
 								<td class="vert-align" style="width: 20%"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
 								<td style="height: 59px">
-                                    <div class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, data) in userdata[name].games">
+                                    <div class="image-thumb" style="float:left; margin-right: 4px; text-align:center;" ng-repeat="(gameid, data) in userdata[name].games">
                                         <img ng-src="{{data.image}}" title="{{data.name}}">
+                                        <span class="caption" style="display:block"><input type="number" style="width:30px" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
                                         <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
-
                                     </div>
+
 
                                     <div style="float:left">
                                         &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus addglyphicon" aria-hidden="true"></span></a>

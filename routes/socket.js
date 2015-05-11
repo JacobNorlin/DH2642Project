@@ -162,6 +162,12 @@ module.exports = function (io, rooms) {
 				});
 			});
 
+			/**
+			 * Store new number of min players
+			 */
+			socket.on('numplayer:change', function(data){
+				currentRoom.getUserData[data.name] = data;
+			});
 
 			/**
 			 * User added a new game
