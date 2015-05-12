@@ -9,6 +9,7 @@
 var exports = module.exports = {};
 var giantbomb = require('../config.js').giantbomb;
 var request = require('request');
+var _und = require('underscore')
 
 
 var rooms = {}	
@@ -42,12 +43,98 @@ exports.getNumberOfPlayersOfGame = function(gameid, room) {
 	var userData = room.getUserData();
 	var numPlayers = 0;
 	for(var user in userData){
-		console.log(userData[user], gameid);
 		if(userData[user].games[gameid]){
 			numPlayers++;
 		}
 	}
 	return numPlayers;
+}
+
+exports.getUsersToNotify = function(room) {
+	var userData = room.getUserData();
+	var gameAgg = {};	
+
+
+
+	var games = _und.chain(userData).
+	map(function(data){
+		return _und.chain(data.games).
+		map(function(game){
+			//Fulhack för att game.id ibland är sträng och ibland int, kan inte hitta varför så gör såhär så länge.
+			if(!(typeof( game.id) == typeof(''))){
+				game.id = ''+game.id;
+			}
+			return game.id;
+		}).value()
+	}).
+	flatten().
+	sortBy(function(gameid){
+		return gameid;
+	}).
+	uniq(true)
+	.value();
+
+	console.log("games", games)
+
+	var numAgg  = _und.chain(userData).
+	mapObject(function(data, name){
+		// console.log(name,"===", data);
+		return _und.chain(data.games).
+		map(function(game){
+			return {gameid: game.id, numPlayers: game.numPlayers}
+		}).
+		value();
+	}).
+	mapObject(function(data, name){
+		return {name:name, data:data}
+	}).
+	values().
+	value()
+
+
+	console.log("numAgg", numAgg)
+
+	var numberOfPlayersInEachGroupPerGame  = _und.chain(games).
+	map(function(gameid){
+		var agg = _und.chain(numAgg).
+		map(function(obj){
+			var a = _und.chain(obj.data).
+			filter(function(data){
+				return gameid == data.gameid;
+			}).
+			first().
+			value();
+			return {name:obj.name, data: a}
+		}).groupBy(function(obj){
+			return obj.data.numPlayers;
+		}).map(function(x){
+			
+			var users = _und.map(x,function(user){
+				return user.name;
+			});
+			return {numPlayers: x[0].data.numPlayers, users: users}	
+		}).value()
+		console.log("agg",  agg)
+
+		return {gameid: gameid, agg: agg};
+	}).value()
+	//console.log("numberOfPlayersInEachGroupPerGame", numberOfPlayersInEachGroupPerGame)
+
+	var playersToNotify = _und.chain(numberOfPlayersInEachGroupPerGame).
+	map(function(game){
+		return _und.chain(game.agg).
+				filter(function(pair){
+					console.log("===", pair)
+					return pair.numPlayers <= pair.users.length
+				}).map(function(pair){
+					return pair.users
+				}).value()
+	}).
+	flatten().
+	value();
+
+	console.log("playersToNotify", playersToNotify)
+
 }
 
 /**
@@ -233,6 +320,10 @@ var Room = function () {
 		}
 	};
 
+	var updateNumPlayers = function(name, data){
+		userdata[name] = data;
+	}
+
 	/**
 	 * Copy a game to a user
 	 * @param name The username to copy the game to
@@ -355,7 +446,8 @@ var Room = function () {
 		copyGame: copyGame,
 		removeGame: removeGame,
 		gameSearchAPI: gameSearchAPI,
-		addGameByIdAPI: addGameByIdAPI
+		addGameByIdAPI: addGameByIdAPI,
+		updateNumPlayers: updateNumPlayers
 	};
 
 }
