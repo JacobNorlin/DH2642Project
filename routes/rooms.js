@@ -55,7 +55,7 @@ exports.getUsersToNotify = function(room) {
 	var gameAgg = {};	
 
 
-
+	//get a list of all games
 	var games = _und.chain(userData).
 	map(function(data){
 		return _und.chain(data.games).
@@ -76,6 +76,8 @@ exports.getUsersToNotify = function(room) {
 
 	console.log("games", games)
 
+
+	//Get a list of objects containing each user, and which games the user has as well as the amount of min players per game
 	var numAgg  = _und.chain(userData).
 	mapObject(function(data, name){
 		// console.log(name,"===", data);
@@ -94,6 +96,7 @@ exports.getUsersToNotify = function(room) {
 
 	console.log("numAgg", numAgg)
 
+	//Create a list containing for each game how many there are in each group of minumum players
 	var numberOfPlayersInEachGroupPerGame  = _und.chain(games).
 	map(function(gameid){
 		var agg = _und.chain(numAgg).
@@ -123,14 +126,29 @@ exports.getUsersToNotify = function(room) {
 	var playersToNotify = _und.chain(numberOfPlayersInEachGroupPerGame).
 	map(function(game){
 		return _und.chain(game.agg).
-				filter(function(pair){
-					console.log("===", pair)
-					return pair.numPlayers <= pair.users.length
-				}).map(function(pair){
-					return pair.users
-				}).value()
+		map(function(pair){
+			var users = _und.chain(game.agg).
+			filter(function(x){ //Filter out so we only get the ones that are eligble for that number of players
+				return x.numPlayers <= pair.numPlayers
+			}).map(function(x){
+				return x.users
+			}).
+			value()
+
+			return {numPlayers: pair.numPlayers, eligble: users}
+		}).
+		filter(function(pair){
+			console.log("lol", pair)
+			return pair.numPlayers <= pair.eligble.length;
+		}).
+		map(function(pair){
+			return pair.eligble;
+		}).
+		value();
+
 	}).
 	flatten().
+	uniq().
 	value();
 
 	console.log("playersToNotify", playersToNotify)
