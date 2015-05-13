@@ -46,6 +46,10 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		}
 	});
 
+	socket.on('notify:player', function(data){
+		alert("GAME TIME NIGGA U CNA PLAY", data)
+	})
+
 	/**
 	 * Initialize the scope
 	 */

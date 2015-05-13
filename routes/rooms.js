@@ -77,11 +77,15 @@ var Room = function() {
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};
-	var usersToNotify = new Array();
 
-	var shouldUserBeNotified = function(userName){
-		_und.usersTo
+	var filterForUsersGames = function(data, userName) {
+		return _und.chain(data).
+		filter(function(game) {
+			console.log("&&", game)
+			return _und.contains(game.eligble, userName);
+		}).value();
 	}
+
 
 	//shoulod probably decompose this a bit...
 	var getUsersToNotify = function(time) {
@@ -92,7 +96,6 @@ var Room = function() {
 		keys().
 		map(function(userName) {
 			if (userHasActiveTimeline(userName, time)) {
-				console.log(userdata[userName].games);
 				return {
 					name: userName,
 					games: userdata[userName].games
@@ -101,6 +104,8 @@ var Room = function() {
 		}).value();
 
 		console.log("eligbleUsers", eligbleUsers);
+		if (!eligbleUsers[0])
+			return;
 
 		var allGames = getAllAddedGames();
 
@@ -111,18 +116,17 @@ var Room = function() {
 		map(function(gameid) {
 			//This basically creates a group for each game and puth each user in them
 			var agg = _und.chain(eligbleUsers).
-			filter(function(user){
+			filter(function(user) {
 				return _und.chain(user.games).keys(user.games).contains(gameid).value();
 			}).
 			map(function(user) {
 				return {
 					name: user.name,
-					data: _und.filter(user.games, function(game){
+					data: _und.filter(user.games, function(game) {
 						return game.id == gameid;
 					})[0]
 				}
 			}).groupBy(function(user) { //Group the users by category of minimum players so like [min1:[user1..n], .., minN[userk..P]]
-				console.log("///", user)
 				return user.data.numPlayers;
 			}).map(function(x) {
 				var users = _und.map(x, function(user) {
@@ -133,7 +137,6 @@ var Room = function() {
 					users: users
 				}
 			}).value()
-			console.log("agg", agg)
 
 			return {
 				gameid: gameid,
@@ -147,7 +150,6 @@ var Room = function() {
 		map(function(game) {
 			return _und.chain(game.agg).
 			map(function(pair) {
-				console.log("lol", pair)
 				var users = _und.chain(game.agg).
 				filter(function(x) { //A group of users are eligble to play with anothher group if they have at most the same amount of min number of players
 					return x.numPlayers <= pair.numPlayers
@@ -177,36 +179,13 @@ var Room = function() {
 
 		}).
 		flatten().
-		map(function(game){
-			return _und.chain(game.eligble).
-			map(function(user){
-				
-				return {gameid: game.gameid, name: user}
-			}).
-			value();
-		}).
-		flatten().
-		groupBy(function(user){
-
-			return user.name;
-		}).
-		map(function(user){
-			var games = _und.map(user, function(user){
-				return user.gameid;
-			})
-			return {name: user[0].name, games:games};
-		}).
 		value();
-
 
 
 
 		console.log("playersToNotify", playersToNotify)
 
-		usersToNotify = playersToNotify;
-
 		return playersToNotify;
-
 	}
 
 
@@ -527,7 +506,8 @@ var Room = function() {
 		updateNumPlayers: updateNumPlayers,
 		userHasActiveTimeline: userHasActiveTimeline,
 		getAllAddedGames: getAllAddedGames,
-		getUsersToNotify: getUsersToNotify
+		getUsersToNotify: getUsersToNotify,
+		filterForUsersGames: filterForUsersGames
 	};
 
 }

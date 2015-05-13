@@ -56,12 +56,14 @@ module.exports = function (io, rooms) {
 		//This should fix some race conditions, its not pretty but muh concurrency. Some data loss might occur
 		var setAllListeners = function() {
 
-			// setInterval(function() {
-		 //    	var usersToNofity = currentRoom.getUsersToNotify(getTime())
-		 //    	if(usersToNofity.length > 0){
-		 //    		socket.emit('notify:player', )
-		 //    	}
-			// }, 60 * 1000); // 60 * 1000 milsec
+			setInterval(function() {
+		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name)
+		    	console.log("user", data)
+		    	if(data){
+		    		socket.emit('notify:player', data);
+		    	}
+
+			}, 5 * 1000); // 60 * 1000 milsec
 
 			/**
 			 *	Check if user has existing data in a cookie
@@ -179,7 +181,6 @@ module.exports = function (io, rooms) {
 			 */
 			socket.on('numplayer:change', function(data){
 				currentRoom.updateNumPlayers(data.name, data.userdata)
-				currentRoom.getUsersToNotify('18:00');
 			});
 
 			/**
