@@ -77,6 +77,11 @@ var Room = function() {
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};
+	var usersToNotify = new Array();
+
+	var shouldUserBeNotified = function(userName){
+		_und.usersTo
+	}
 
 	//shoulod probably decompose this a bit...
 	var getUsersToNotify = function(time) {
@@ -106,18 +111,18 @@ var Room = function() {
 		map(function(gameid) {
 			//This basically creates a group for each game and puth each user in them
 			var agg = _und.chain(eligbleUsers).
+			filter(function(user){
+				return _und.chain(user.games).keys(user.games).contains(gameid).value();
+			}).
 			map(function(user) {
-				var a = _und.chain(user.games).
-				filter(function(game) {
-					return gameid == game.id;
-				}).
-				first(). //Only ever one element so we just fetch it
-				value();
 				return {
 					name: user.name,
-					data: a
+					data: _und.filter(user.games, function(game){
+						return game.id == gameid;
+					})[0]
 				}
 			}).groupBy(function(user) { //Group the users by category of minimum players so like [min1:[user1..n], .., minN[userk..P]]
+				console.log("///", user)
 				return user.data.numPlayers;
 			}).map(function(x) {
 				var users = _und.map(x, function(user) {
@@ -149,6 +154,7 @@ var Room = function() {
 				}).map(function(x) {
 					return x.users
 				}).
+				flatten().
 				value()
 
 				return {
@@ -171,11 +177,33 @@ var Room = function() {
 
 		}).
 		flatten().
-		uniq().
+		map(function(game){
+			return _und.chain(game.eligble).
+			map(function(user){
+				
+				return {gameid: game.gameid, name: user}
+			}).
+			value();
+		}).
+		flatten().
+		groupBy(function(user){
+
+			return user.name;
+		}).
+		map(function(user){
+			var games = _und.map(user, function(user){
+				return user.gameid;
+			})
+			return {name: user[0].name, games:games};
+		}).
 		value();
 
 
+
+
 		console.log("playersToNotify", playersToNotify)
+
+		usersToNotify = playersToNotify;
 
 		return playersToNotify;
 
