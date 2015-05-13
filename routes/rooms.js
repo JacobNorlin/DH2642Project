@@ -129,9 +129,6 @@ exports.getUsersToNotify = function(room, time) {
 	value();
 
 
-	//Compare timelines
-
-
 	console.log("playersToNotify", playersToNotify)
 
 }
