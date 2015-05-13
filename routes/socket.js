@@ -168,7 +168,7 @@ module.exports = function (io, rooms) {
 			 */
 			socket.on('numplayer:change', function(data){
 				currentRoom.updateNumPlayers(data.name, data.userdata)
-				console.log(rooms.getUsersToNotify(currentRoom));
+				console.log(rooms.getUsersToNotify(currentRoom, '18:00'));
 			});
 
 			/**

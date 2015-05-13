@@ -50,68 +50,43 @@ exports.getNumberOfPlayersOfGame = function(gameid, room) {
 	return numPlayers;
 }
 
-exports.getUsersToNotify = function(room) {
+exports.getUsersToNotify = function(room, time) {
 	var userData = room.getUserData();
 	var gameAgg = {};	
 
+	//Filter out to only get users with active timeline
+	//Also returns only the game data, since timeline is not needed.
+	var eligbleUsers = _und.chain(userData).
+	keys().
+	map(function(userName){
+		if(room.userHasActiveTimeline(userName, time)){
+			console.log(userData[userName].games);
+			return {name: userName, games: userData[userName].games}
+		}
+	}).value();
 
-	//get a list of all games
-	var games = _und.chain(userData).
-	map(function(data){
-		return _und.chain(data.games).
-		map(function(game){
-			//Fulhack för att game.id ibland är sträng och ibland int, kan inte hitta varför så gör såhär så länge.
-			if(!(typeof( game.id) == typeof(''))){
-				game.id = ''+game.id;
-			}
-			return game.id;
-		}).value()
-	}).
-	flatten().
-	sortBy(function(gameid){
-		return gameid;
-	}).
-	uniq(true)
-	.value();
+	console.log("eligbleUsers", eligbleUsers);
 
-	console.log("games", games)
+	var allGames = room.getAllAddedGames();
 
 
-	//Get a list of objects containing each user, and which games the user has as well as the amount of min players per game
-	var numAgg  = _und.chain(userData).
-	mapObject(function(data, name){
-		// console.log(name,"===", data);
-		return _und.chain(data.games).
-		map(function(game){
-			return {gameid: game.id, numPlayers: game.numPlayers}
-		}).
-		value();
-	}).
-	mapObject(function(data, name){
-		return {name:name, data:data}
-	}).
-	values().
-	value()
 
-
-	console.log("numAgg", numAgg)
-
-	//Create a list containing for each game how many there are in each group of minumum players
-	var numberOfPlayersInEachGroupPerGame  = _und.chain(games).
+	//Group each player into what numplayer group for each game so game:min2(user1..n), game2 etc...
+	var numberOfPlayersInEachGroupPerGame  = _und.chain(allGames).
 	map(function(gameid){
-		var agg = _und.chain(numAgg).
-		map(function(obj){
-			var a = _und.chain(obj.data).
-			filter(function(data){
-				return gameid == data.gameid;
+		//This basically creates a group for each game and puth each user in them
+		var agg = _und.chain(eligbleUsers).
+		map(function(user){
+			var a = _und.chain(user.games).
+			filter(function(game){
+				return gameid == game.id;
 			}).
-			first().
+			first().//Only ever one element so we just fetch it
 			value();
-			return {name:obj.name, data: a}
-		}).groupBy(function(obj){
-			return obj.data.numPlayers;
+			return {name:user.name, data: a}
+		}).groupBy(function(user){//Group the users by category of minimum players so like [min1:[user1..n], .., minN[userk..P]]
+			return user.data.numPlayers;
 		}).map(function(x){
-			
 			var users = _und.map(x,function(user){
 				return user.name;
 			});
@@ -121,28 +96,30 @@ exports.getUsersToNotify = function(room) {
 
 		return {gameid: gameid, agg: agg};
 	}).value()
-	//console.log("numberOfPlayersInEachGroupPerGame", numberOfPlayersInEachGroupPerGame)
 
+	//Find which players to notify
 	var playersToNotify = _und.chain(numberOfPlayersInEachGroupPerGame).
+	//Map over each game and return for each the elighble users
 	map(function(game){
 		return _und.chain(game.agg).
 		map(function(pair){
+			console.log("lol", pair)
 			var users = _und.chain(game.agg).
-			filter(function(x){ //Filter out so we only get the ones that are eligble for that number of players
+			filter(function(x){ //A group of users are eligble to play with anothher group if they have at most the same amount of min number of players
 				return x.numPlayers <= pair.numPlayers
 			}).map(function(x){
 				return x.users
 			}).
 			value()
 
-			return {numPlayers: pair.numPlayers, eligble: users}
+			return {gameid: game.gameid, numPlayers: pair.numPlayers, eligble: users}
 		}).
 		filter(function(pair){
-			console.log("lol", pair)
-			return pair.numPlayers <= pair.eligble.length;
+			
+			return pair.numPlayers <= pair.eligble.length; //Filter out which users have a grouping that can match for a game
 		}).
 		map(function(pair){
-			return pair.eligble;
+			return {gameid: pair.gameid, eligble: pair.eligble};
 		}).
 		value();
 
@@ -150,6 +127,10 @@ exports.getUsersToNotify = function(room) {
 	flatten().
 	uniq().
 	value();
+
+
+	//Compare timelines
+
 
 	console.log("playersToNotify", playersToNotify)
 
@@ -182,6 +163,45 @@ var Room = function () {
 	var INITIAL_GUEST_NAME = 'Guest ';
 	var userdata = {};
 	var gamedata = {};
+
+	var getGamesForUser = function(userName){
+		var user = getUser(userName);
+		return _und.map(user.games, function(game){
+			return {gameid: game.id, numPlayers: game.numPlayers}
+		}).
+		value();
+
+	}
+
+	var getAllAddedGames = function(){
+		return _und.chain(userdata).
+		map(function(data){
+			return _und.chain(data.games).
+			map(function(game){
+				//Fulhack för att game.id ibland är sträng och ibland int, kan inte hitta varför, så gör såhär så länge.
+				if(!(typeof( game.id) == typeof(''))){
+					game.id = ''+game.id;
+				}
+				return game.id;
+			}).value()
+		}).
+		flatten().
+		sortBy(function(gameid){
+			return gameid;
+		}).
+		uniq(true)
+		.value();
+	}
+
+
+	var getUser = function(userName) {
+		return userdata[userName];
+	}
+
+	var userHasActiveTimeline = function (userName, time){
+		var user = getUser(userName);
+		return user.timeline[time];
+	}
 
 	/**
 	 * If name is available, create a new user with that name
@@ -465,7 +485,9 @@ var Room = function () {
 		removeGame: removeGame,
 		gameSearchAPI: gameSearchAPI,
 		addGameByIdAPI: addGameByIdAPI,
-		updateNumPlayers: updateNumPlayers
+		updateNumPlayers: updateNumPlayers,
+		userHasActiveTimeline: userHasActiveTimeline,
+		getAllAddedGames: getAllAddedGames
 	};
 
 }
