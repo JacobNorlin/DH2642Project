@@ -57,9 +57,9 @@ module.exports = function (io, rooms) {
 		var setAllListeners = function() {
 
 			setInterval(function() {
-		    
+		    	var userToNofity = currentRoom.getUsersToNotify(getTime())
 			}, 60 * 1000); // 60 * 1000 milsec
-			
+
 			/**
 			 *	Check if user has existing data in a cookie
 			 */
@@ -176,7 +176,7 @@ module.exports = function (io, rooms) {
 			 */
 			socket.on('numplayer:change', function(data){
 				currentRoom.updateNumPlayers(data.name, data.userdata)
-				console.log(rooms.getUsersToNotify(currentRoom, '18:00'));
+				console.log(currentRoom.getUsersToNotify('18:00'));
 			});
 
 			/**
