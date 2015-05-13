@@ -185,17 +185,6 @@ var Room = function() {
 	var userdata = {};
 	var gamedata = {};
 
-	var getGamesForUser = function(userName) {
-		var user = getUser(userName);
-		return _und.map(user.games, function(game) {
-			return {
-				gameid: game.id,
-				numPlayers: game.numPlayers
-			}
-		}).
-		value();
-
-	}
 
 	var getAllAddedGames = function() {
 		return _und.chain(userdata).

@@ -24,6 +24,9 @@ module.exports = function (io, rooms) {
 		var nsp;
 		var currentRoom;
 
+
+		
+
 		/**
 		 *	Will assign the socket to the given roomId. Since the rest of the code depends on this there will be race conditions, not sure how to fix.
 		 */
@@ -52,6 +55,11 @@ module.exports = function (io, rooms) {
 
 		//This should fix some race conditions, its not pretty but muh concurrency. Some data loss might occur
 		var setAllListeners = function() {
+
+			setInterval(function() {
+		    
+			}, 60 * 1000); // 60 * 1000 milsec
+			
 			/**
 			 *	Check if user has existing data in a cookie
 			 */
