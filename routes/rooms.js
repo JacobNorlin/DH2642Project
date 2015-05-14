@@ -144,6 +144,7 @@ var Room = function() {
 			};
 		}).value()
 
+		console.log("///", numberOfPlayersInEachGroupPerGame)
 		//Find which players to notify
 		var playersToNotify = _und.chain(numberOfPlayersInEachGroupPerGame).
 			//Map over each game and return for each the elighble users
@@ -165,8 +166,20 @@ var Room = function() {
 					eligble: users
 				}
 			}).
+			groupBy(function(game){
+				return game.gameid;
+			}).
+			map(function(group){
+				//After we have grouped all groups for each game, we select only the largest group, so as to avoid duplicates.
+				return _und.chain(group).
+				sortBy(function(game){
+					game.eligble.length
+				}).
+				last().
+				value();
+			}).
 			filter(function(pair) {
-
+				console.log(pair);
 				return pair.numPlayers <= pair.eligble.length; //Filter out which users have a grouping that can match for a game
 			}).
 			map(function(pair) {
