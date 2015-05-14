@@ -74,9 +74,15 @@ module.exports = function (io, rooms) {
 					name = currentRoom.getName(reply.name);
 
 					if (reply.games) {
-						reply.games.forEach(function(gameid) {
-							currentRoom.addGame(name, gameid, function(){
-								console.log("added cookie game "+gameid);
+						reply.games.forEach(function(pair) {
+							var gameid = pair[0];
+							var minPlayers = pair[1];
+							currentRoom.addGame(name, gameid, minPlayers, function(){
+								io.sockets.emit('game:add', {
+									name: name,
+									gameid: gameid,
+									gamedata: currentRoom.getUserData()[name].games[gameid]
+								});
 							});
 						});
 					}
@@ -187,7 +193,7 @@ module.exports = function (io, rooms) {
 			 * User added a new game
 			 */
 			socket.on('game:add', function (gameid) {
-				currentRoom.addGame(name, gameid, function() {
+				currentRoom.addGame(name, gameid, 0, function() {
 					io.sockets.emit('game:add', {
 						name: name,
 						gameid: gameid,

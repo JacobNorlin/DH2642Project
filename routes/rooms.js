@@ -364,14 +364,14 @@ var Room = function() {
 	 * @param name The username of the user
 	 * @param gameid The id of the game
 	 */
-	var addGame = function(name, gameid, callback) {
+	var addGame = function(name, gameid, numPlayers, callback) {
 		if (!getGame(gameid)) {
-			addGameByIdAPI(gameid, function() {
-				addGameToUser(name, gameid);
+			addGameByIdAPI(gameid, numPlayers, function() {
+				addGameToUser(name, gameid, numPlayers);
 				callback();
 			});
 		} else {
-			addGameToUser(name, gameid);
+			addGameToUser(name, gameid, numPlayers);
 			callback();
 		}
 	};
@@ -439,7 +439,7 @@ var Room = function() {
 	 * Download data for a game from the API
 	 * @param gameid The id of the game
 	 */
-	var addGameByIdAPI = function(gameid, callback) {
+	var addGameByIdAPI = function(gameid, numPlayers, callback) {
 		var url = "http://www.giantbomb.com/api/game/" + gameid + "/?api_key=" + giantbomb.API_KEY + "&format=json&field_list=id,name,image";
 		console.log("api requesting for id = " + gameid);
 		request(url, function(error, response, data) {
@@ -447,7 +447,8 @@ var Room = function() {
 				data = JSON.parse(data);
 				gamedata[data.results.id] = {
 					image: data.results.image.icon_url,
-					name: data.results.name
+					name: data.results.name,
+					numPlayers: numPlayers
 				};
 				callback();
 			} else if (error) {
@@ -462,11 +463,12 @@ var Room = function() {
 	 * @param name The username to add the game to
 	 * @param gameid The id of the game
 	 */
-	var addGameToUser = function(name, gameid) {
+	var addGameToUser = function(name, gameid, numPlayers) {
 		userdata[name].games[gameid] = {
 			id: gameid,
 			name: getGame(gameid).name,
-			image: getGame(gameid).image
+			image: getGame(gameid).image,
+			numPlayers: numPlayers
 		}
 	};
 

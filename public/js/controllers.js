@@ -34,6 +34,8 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	 * Send back the data from the cookies
 	 */
 	socket.on('cookies:get', function (data, callback) {
+
+		console.log($cookieStore.get("games"))
 		if ($cookieStore.get("name")) {
 			callback({
 				name: $cookieStore.get("name"),
@@ -137,7 +139,8 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	socket.on('game:add', function (data) {
 		if ($scope.userdata[data.name].games[data.gameid]) // Game already exists
 			return;
-		data.gamedata.numPlayers = 0;
+		// if(!data.gamedata.numPlayers)
+		// 	data.gamedata.numPlayers = 0;
 
 		$scope.userdata[data.name].games[data.gameid] = data.gamedata;
 		saveToCookie();
@@ -187,7 +190,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	var gamesToList = function() {
 		var games = [];
 		for (var key in $scope.userdata[$scope.name].games) {
-			games.push(key);
+			games.push([key, $scope.userdata[$scope.name].games[key].numPlayers]);
 		}
 		return games;
 	};
