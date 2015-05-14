@@ -63,7 +63,7 @@ module.exports = function (io, rooms) {
 		var setAllListeners = function() {
 
 
-
+			//Checks for matches every X seconds
 			setInterval(function() {
 				var currentTime = roundTime();
 		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify(currentTime), name)
@@ -165,11 +165,22 @@ module.exports = function (io, rooms) {
 				}
 			});
 
+			/**
+			* Clears the timeline of a user
+			*/
+			socket.on('timeline:clear', function(data){
+				for(var key in currentRoom.getUserData()[data.name].timeline){
+					delete currentRoom.getUserData()[data.name].timeline[key];
+				}
+				io.to(nsp).emit('timeline:clear', data);
+			})
+
 
 			/**
 			 * User added a new time to their timeline
 			 */
 			socket.on('timeline:edit:add', function (data) {
+				console.log(data);
 				currentRoom.addTime(name, data.time);
 				io.to(nsp).emit('timeline:edit:add', data);
 			});

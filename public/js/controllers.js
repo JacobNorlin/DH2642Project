@@ -22,7 +22,6 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	//Fulhack, borde anvönda angular routern men den cpar så jag kan inte
   	var roomId = $location.absUrl().split('/')[3];
 
-  	var nsp; // TODO: vad är detta?
 
   	//Depending on if the url(joining a room or just wanting a random one), will tell server to create or join that room
   	if(roomId){
@@ -53,13 +52,18 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		}
 	});
 
+	/**
+	* Creates a popup for the player for all the games the hen has matched for. Clears timeline on match
+	*/
 	socket.on('notify:player', function(data){
 
 		$scope.notificationData = data;
-		$scope.showPopup('gamenotificationpopup')
-		console.log("set notification data to", data);
-		//$(".notification").toggle();
+		$scope.showPopup('gamenotificationpopup');
+		//$scope.userdata[$scope.name].timeline = {}
+		console.log($scope.userdata[$scope.name].timeline)
+		socket.emit('timeline:clear', {name: $scope.name})
 	})
+
 
 
 	/**
@@ -120,6 +124,19 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		delete $scope.userdata[data.name];
 		updateTitle();
 	});
+
+	/**
+	* Clears the timeline of a user
+	*/
+	socket.on('timeline:clear', function(data){
+		console.log(data, $scope.userdata[data.name].timeline);
+		for(var key in $scope.userdata[data.name].timeline){
+			console.log(key);
+			delete $scope.userdata[data.name].timeline[key];
+		}
+		saveToCookie();
+	})
+
 
 	/**
 	 *	Update the timeline with an added time for a user

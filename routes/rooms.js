@@ -94,19 +94,19 @@ var Room = function() {
 		//Also returns only the game data, since timeline is not needed.
 		var eligbleUsers = _und.chain(userdata).
 		keys().
-		map(function(userName) {
-			if (userHasActiveTimeline(userName, time)) {
-				return {
-					name: userName,
-					games: userdata[userName].games
-				}
-			}
-		}).value();
+		filter(function(userName) {
+			return userHasActiveTimeline(userName, time);
+		}).
+		map(function(userName){
+			return {name:userName, games: userdata[userName].games}
+		}).
+		value();
 
 		console.log("eligbleUsers", eligbleUsers);
 		if (!eligbleUsers[0])
 			return;
 
+		//Get a list of all unique game ids currently used
 		var allGames = getAllAddedGames();
 
 
@@ -202,6 +202,10 @@ var Room = function() {
 	}
 
 
+	/**
+	* Creates a list of all the currently used games
+	* @returns {[string]} returns a list of gameid strings
+	*/
 	var getAllAddedGames = function() {
 		return _und.chain(userdata).
 		map(function(data) {
@@ -228,7 +232,9 @@ var Room = function() {
 	}
 
 	var userHasActiveTimeline = function(userName, time) {
+
 		var user = getUser(userName);
+		console.log("timeline "+userName, user.timeline)
 		return user.timeline[time];
 	}
 
