@@ -62,8 +62,11 @@ module.exports = function (io, rooms) {
 		//This should fix some race conditions, its not pretty but muh concurrency. Some data loss might occur
 		var setAllListeners = function() {
 
+
+
 			setInterval(function() {
-		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name)
+				var currentTime = roundTime();
+		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify(currentTime), name)
 		    	console.log("user", data)
 		    	if(data.length > 0){
 		    		socket.emit('notify:player', data);
@@ -248,17 +251,27 @@ module.exports = function (io, rooms) {
 	})
 };
 
+//Takes a date() and rounds it to neares 30 mins and returns it as formatted string.
+var roundTime = function(){
+	var coeff = 1000 * 60 * 30;
+	var date = new Date();  //or use any other date
+	var rounded = new Date(Math.round(date.getTime() / coeff) * coeff)
+	return formatTime(rounded);
+}
 
+function formatTime(date) {
+	var addZero = function(i) {
+		if (i < 10) i = "0" + i;
+		return i;
+	};
+	var curdate = new Date();
+	return addZero(date.getHours())+":"+addZero(date.getMinutes());
+}
 
 /**
  * Return the current time
  * @returns {string} The current time
  */
 function getTime() {
-	var addZero = function(i) {
-		if (i < 10) i = "0" + i;
-		return i;
-	};
-	var curdate = new Date();
-	return addZero(curdate.getHours())+":"+addZero(curdate.getMinutes());
+	return formatTime(new Date());
 }
