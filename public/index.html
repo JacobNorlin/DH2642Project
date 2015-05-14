@@ -50,7 +50,7 @@
 								<td style="height: 59px">
                                     <div class="image-thumb" style="float:left; margin-right: 4px; text-align:center;" ng-repeat="(gameid, data) in userdata[name].games">
                                         <img ng-src="{{data.image}}" title="{{data.name}}">
-                                        <span class="caption" style="display:block"><input type="number" style="width:30px" min="2" max="999" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
+                                        <span class="caption" style="display:block"><input type="number" style="width:40px; " min="2" max="999" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
                                         <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
                                     </div>
 
@@ -66,7 +66,8 @@
 								<td class="vert-align">{{user}}</td>
 								<td style="height: 59px">
                                     <div  class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, gamedata) in userdata[user].games">
-                                        <img ng-src="{{gamedata.image}}" title="{{gamedata.name}}">&nbsp
+                                        <img ng-src="{{gamedata.image}}" title="{{gamedata.name}}">
+                                        <div style="width:40px;">{{gamedata.numPlayers}}</div>
                                         <a ng-click="copyGame(user, gameid)" title="{{gamedata.name}}" href="#" class="image-their"></a>
                                     </div>
                                 </td>
@@ -145,7 +146,7 @@
 
 			
 			<div id="addgamepopup" class="popup" style="border-radius: 10px">
-                <button ng-click="showPopup('addgamepopup')" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
+                <button ng-click="hidePopups()" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
                 <br>
                 <span style="font-size: 1.15em; font-weight: bold">ADD A GAME</span><br>
                 <br><br>
