@@ -6,7 +6,7 @@
 /**
  * Register the 'on' and 'emit' services for handling client and server communication.
  */
-app.factory('socket', function ($rootScope) {
+app.factory('socket', function ($rootScope, $location) {
 	var socket = io.connect();
 	return {
 		on: function (eventName, callback) {
@@ -26,6 +26,7 @@ app.factory('socket', function ($rootScope) {
 					}
 				});
 			})
-		}
+		},
+		of: io.of
 	};
 });

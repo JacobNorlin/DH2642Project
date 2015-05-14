@@ -7,7 +7,7 @@
 
 /* Controllers */
 
-app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
+app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParams, socket) {
 	var MAX_USERNAME_LENGTH = 30;
 	var MAX_MESSAGE_LENGTH = 1000;
 
@@ -19,6 +19,22 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	// Socket listeners
 	// ================
 
+	//Fulhack, borde anvönda angular routern men den cpar så jag kan inte
+  	var roomId = $location.absUrl().split('/')[3];
+
+  	var nsp; // TODO: vad är detta?
+
+  	//Depending on if the url(joining a room or just wanting a random one), will tell server to create or join that room
+  	if(roomId){
+	  	socket.emit('join:room', roomId, function(reply){
+
+	  	})
+  	}else{
+  		socket.emit('create:room', '', function(reply){
+  			$location.path('/'+reply.roomId)
+  		})
+  	}
+
 	/**
 	 * Send back the data from the cookies
 	 */
@@ -27,17 +43,25 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 			callback({
 				name: $cookieStore.get("name"),
 				games: $cookieStore.get("games"),
-				timeline: $cookieStore.get("timeline")
+				timeline: $cookieStore.get("timeline"),
+				roomId: roomId
 			})
 		} else {
 			callback(false);
 		}
 	});
 
+	socket.on('notify:player', function(data){
+
+		//TODO: Fixa notifications
+		alert("GAME TIME NIGGA U CNA PLAY", data)
+	});
+
 	/**
 	 * Initialize the scope
 	 */
 	socket.on('init', function (data) {
+
 		$scope.name = data.name;
 		$scope.userdata = data.userdata;
 		$scope.id = data.userdata[data.name].id;
@@ -124,10 +148,12 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	socket.on('game:add', function (data) {
 		if ($scope.userdata[data.name].games[data.gameid]) // Game already exists
 			return;
+		data.gamedata.numPlayers = 0;
 
 		$scope.userdata[data.name].games[data.gameid] = data.gamedata;
 		saveToCookie();
 	});
+
 
 	/**
 	 *	Update the list of games with a removed game for a user
@@ -139,13 +165,13 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 		delete $scope.userdata[data.name].games[data.gameid];
 	});
 
-
 	/**
-	 *	Receive the search results data from the server
+	 *	Receive the search results from server (as list)
 	 */
-	socket.on('search:results', function (data) {
-		$scope.searchresults = data;
+	socket.on('game:searchresults', function (results) {
+		$scope.searchresults = results;
 	});
+
 
 	// Private helpers
 	// ===============
@@ -241,10 +267,18 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 
 	$scope.messages = [];
 
+	//Method for updating the min number of players for a gaem
+	$scope.numPlayerChange = function(gameid, name) {
+		console.log($scope.userdata[name]);
+		socket.emit('numplayer:change', {userdata: $scope.userdata[name], name: name});
+		saveToCookie();
+	};
+
 	/**
 	 *	Send a message to the other users
 	 */
 	$scope.sendMessage = function () {
+		console.log($scope.userdata)
 		if ($scope.message.length == 0) {
 			return;
 		} else if($scope.message.length > MAX_MESSAGE_LENGTH)	{
@@ -290,11 +324,22 @@ app.controller('AppCtrl', function ($scope, $cookieStore, socket) {
 	};
 
 	/**
+	 * Add a new game to the user's game list
+	 */
+	$scope.selectGame = function(gameid) {
+		socket.emit('game:add', gameid);
+		$scope.searchresults = {
+			status: '',
+			data: []
+		};
+	};
+
+	/**
 	 * Remove a game from the user's game list
 	 * @param gameid The gameid of the game to be removed
 	 */
 	$scope.removeGame = function(gameid) {
-		socket.emit('game:remove', gameid)
+		socket.emit('game:remove', gameid);
 		delete $scope.userdata[$scope.name].games[gameid];
 		saveToCookie();
 	};
