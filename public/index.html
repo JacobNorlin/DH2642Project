@@ -50,7 +50,7 @@
 								<td style="height: 59px">
                                     <div class="image-thumb" style="float:left; margin-right: 4px; text-align:center;" ng-repeat="(gameid, data) in userdata[name].games">
                                         <img ng-src="{{data.image}}" title="{{data.name}}">
-                                        <span class="caption" style="display:block"><input type="number" style="width:30px" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
+                                        <span class="caption" style="display:block"><input type="number" style="width:30px" min="2" max="999" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
                                         <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
                                     </div>
 

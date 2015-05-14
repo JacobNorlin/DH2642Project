@@ -213,7 +213,7 @@ module.exports = function (io, rooms) {
 			 * User added a new game
 			 */
 			socket.on('game:add', function (gameid) {
-				currentRoom.addGame(name, gameid, 0, function() {
+				currentRoom.addGame(name, gameid, 2, function() {
 					io.sockets.emit('game:add', {
 						name: name,
 						gameid: gameid,
