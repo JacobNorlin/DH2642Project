@@ -59,7 +59,7 @@ module.exports = function (io, rooms) {
 			setInterval(function() {
 		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name)
 		    	console.log("user", data)
-		    	if(data){
+		    	if(data.length > 0){
 		    		socket.emit('notify:player', data);
 		    	}
 

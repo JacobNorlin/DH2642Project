@@ -47,7 +47,10 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	});
 
 	socket.on('notify:player', function(data){
-		alert("GAME TIME NIGGA U CNA PLAY", data)
+		$scope.notificationData = data;
+		$scope.showPopup('gamenotificationpopup')
+		console.log("set notification data to", data);
+		//$(".notification").toggle();
 	})
 
 	/**
@@ -276,12 +279,20 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		$scope.message = '';
 	};
 
+	$scope.showPopup = function(popupId){
+		$("#"+popupId+", .overlay").fadeIn(100);
+		$("#searchbox").focus();
+	}
+
+	$scope.hidePopups = function(popupId){
+		$(".overlay, .popup").fadeOut(100);
+	}
+
 	/**
 	 * Show the search popup when adding a new game
 	 */
-	$scope.togglePopup = function() {
-		$(".overlay, .popup").fadeToggle(100);
-		$("#searchbox").focus();
+	$scope.togglePopup = function(popupId) {
+		console.log(popupId)
 	};
 
 	/**

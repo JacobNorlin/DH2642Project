@@ -56,7 +56,7 @@
 
 
                                     <div style="float:left">
-                                        &nbsp;<a href="#"><span id="add-game" ng-click="togglePopup()" class="glyphicon glyphicon-plus addglyphicon" aria-hidden="true"></span></a>
+                                        &nbsp;<a href="#"><span id="add-game" ng-click="showPopup('addgamepopup')" class="glyphicon glyphicon-plus addglyphicon" aria-hidden="true"></span></a>
 
                                     </div>
                                 </td>
@@ -125,9 +125,27 @@
 				</div>
 			</div>
 
-			<div class="overlay" ng-click="togglePopup()"></div>
+			<div class="overlay" ng-click="hidePopups()"></div>
+			<div id="gamenotificationpopup" class="popup notification" style="border-radius: 10px">
+				<div class="panel panel-default">
+					<div class="panel-heading">YOU'RE GAME IS READ SIR</div>
+					<table class="table">
+						<tr>
+							<td><b>GAMES</td>
+							<td><b>MATCHED PLAYERS</td>
+						</tr>
+						<tr ng-repeat="game in notificationData">
+
+							<td><img ng-src="{{userdata[game.eligble[0]].games[game.gameid].image}}" style="width: 40px; height: 40px;"></td>
+							<td ng-repeat="user in game.eligble">{{user}}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+
+			
 			<div id="addgamepopup" class="popup" style="border-radius: 10px">
-                <button ng-click="togglePopup()" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
+                <button ng-click="showPopup('addgamepopup')" type="button" class="close" aria-label="Close" style="margin-top: 3px; margin-right:8px"><span aria-hidden="true">&times;</span></button>
                 <br>
                 <span style="font-size: 1.15em; font-weight: bold">ADD A GAME</span><br>
                 <br><br>
@@ -141,7 +159,7 @@
 	                        <tr ng-if="searchresults.status == 'loading'">
 	                            <td>Loading..</td>
 	                        </tr>
-	                        <tr ng-if="searchresults.status == 'empty'">
+	                        <tr ng-if="searchresults.status == 'empty'">x
 	                            <td>No search results.</td>
 	                        </tr>
 	
