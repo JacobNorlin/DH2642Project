@@ -63,13 +63,11 @@ module.exports = function (io, rooms) {
 		var setAllListeners = function() {
 
 			setInterval(function() {
-				var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name);
-				console.log("user", data);
-				/* TODO: fix
-				 if(data){
-				 socket.emit('notify:player', data);
-				 }*/
-
+		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name)
+		    	console.log("user", data)
+		    	if(data.length > 0){
+		    		socket.emit('notify:player', data);
+		    	}
 			}, 5 * 1000); // 60 * 1000 milsec
 
 			/**
@@ -81,9 +79,11 @@ module.exports = function (io, rooms) {
 					name = currentRoom.getName(reply.name);
 
 					if (reply.games) {
-						reply.games.forEach(function(gameid) {
-							currentRoom.addGame(name, gameid, function(){
-								console.log("added cookie game "+gameid);
+
+						reply.games.forEach(function(pair) {
+							var gameid = pair[0];
+							var minPlayers = pair[1];
+							currentRoom.addGame(name, gameid, minPlayers, function(){
 								io.sockets.emit('game:add', {
 									name: name,
 									gameid: gameid,
@@ -199,7 +199,7 @@ module.exports = function (io, rooms) {
 			 * User added a new game
 			 */
 			socket.on('game:add', function (gameid) {
-				currentRoom.addGame(name, gameid, function() {
+				currentRoom.addGame(name, gameid, 0, function() {
 					io.sockets.emit('game:add', {
 						name: name,
 						gameid: gameid,
