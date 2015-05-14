@@ -6,9 +6,6 @@
 
 
 
-var giantbomb = require('../config.js').giantbomb;
-var request = require('request');
-
 // export function for listening to the socket
 
 /**
@@ -34,7 +31,7 @@ module.exports = function (io, rooms) {
 		var currentRoom;
 
 
-		
+
 
 		/**
 		 *	Will assign the socket to the given roomId. Since the rest of the code depends on this there will be race conditions, not sure how to fix.
@@ -42,7 +39,7 @@ module.exports = function (io, rooms) {
 		socket.on('join:room', function(roomId, callback) {
 
 			nsp = roomId;
-			socket.join(nsp);	
+			socket.join(nsp);
 			currentRoom = rooms.getRoom(nsp);
 			setAllListeners();
 			callback(true);
@@ -66,12 +63,12 @@ module.exports = function (io, rooms) {
 		var setAllListeners = function() {
 
 			setInterval(function() {
-		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name);
-		    	console.log("user", data);
+				var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name);
+				console.log("user", data);
 				/* TODO: fix
-		    	if(data){
-		    		socket.emit('notify:player', data);
-		    	}*/
+				 if(data){
+				 socket.emit('notify:player', data);
+				 }*/
 
 			}, 5 * 1000); // 60 * 1000 milsec
 
@@ -121,7 +118,7 @@ module.exports = function (io, rooms) {
 
 			/**
 			 *	Notify other clients that a new user has joined
-	 		 */
+			 */
 			var newJoin = function() {
 				io.to(nsp).emit('user:join', {
 						name: name,
@@ -210,7 +207,6 @@ module.exports = function (io, rooms) {
 					});
 				});
 			});
-		});
 
 			/**
 			 * User copied a game
@@ -247,65 +243,11 @@ module.exports = function (io, rooms) {
 
 		}
 
-		
+
 
 	})
-				callback();
-			});
-		} else {
-			addGameToUser(name, gameid);
-			callback();
-		}
-				data = JSON.parse(data);
-				if (data.results.length == 0) {
-					callback({
-						status: 'empty',
-						data: []
-					});
-				} else {
-					for (var i=0; i < data.results.length; i++) {
-						if (!data.results[i].image)
-							continue;
-
-						gamedata[data.results[i].id] = {
-							name: data.results[i].name,
-							image: data.results[i].image.icon_url
-						}
-					}
-					callback({
-						status: 'ok',
-						data: data.results
-					});
-				}
-			} else if (error) {
-				console.log("gameSearchAPI failed (query: "+searchQuery+")");
-			}
-		});
-	};
-
-	/**
-	 * Download data for a game from the API
-	 * @param gameid The id of the game
-	 */
-	var addGameByIdAPI = function(gameid, callback) {
-		var url = "http://www.giantbomb.com/api/game/"+gameid+"/?api_key="+giantbomb.API_KEY+"&format=json&field_list=id,name,image";
-		console.log("api requesting for id = "+gameid);
-		request(url, function (error, response, data) {
-			if (!error && response.statusCode == 200) {
-				data = JSON.parse(data);
-				gamedata[data.results.id] = {
-					image: data.results.image.icon_url,
-					name: data.results.name
-				};
-				callback();
-			} else if (error) {
-				console.log("addGameByIdAPI failed (gameid: "+gameid+")");
-
-		});
 };
 
-		gameSearchAPI: gameSearchAPI,
-		addGameByIdAPI: addGameByIdAPI
 
 
 /**
