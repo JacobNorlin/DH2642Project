@@ -49,7 +49,7 @@
 								<td class="vert-align" style="width: 20%"><a href="#" editable-text="name" onbeforesave="changeName($data)">{{name || "Empty"}}</a></td>
 								<td style="height: 59px">
                                     <div class="image-thumb" style="float:left; margin-right: 4px; text-align:center;" ng-repeat="(gameid, data) in userdata[name].games">
-                                        <img ng-src="{{data.image}}" title="{{data.name}}">
+                                        <img ng-src="{{data.image}}" err-src="images/unknown.png" title="{{data.name}}">
                                         <span class="caption" style="display:block"><input type="number" style="width:40px; " min="2" max="999" ng-model="data.numPlayers" ng-change="numPlayerChange(gameid, name)"></span>
                                         <a ng-click="removeGame(gameid)" title="{{data.name}}" href="#" class="image-own"></a>
                                     </div>
@@ -66,7 +66,7 @@
 								<td class="vert-align">{{user}}</td>
 								<td style="height: 59px">
                                     <div  class="image-thumb" style="float:left; margin-right: 4px" ng-repeat="(gameid, gamedata) in userdata[user].games">
-                                        <img ng-src="{{gamedata.image}}" title="{{gamedata.name}}">
+                                        <img ng-src="{{gamedata.image}}" err-src="images/unknown.png" title="{{gamedata.name}}">
                                         <div style="width:40px;">{{gamedata.numPlayers}}</div>
                                         <a ng-click="copyGame(user, gameid)" title="{{gamedata.name}}" href="#" class="image-their"></a>
                                     </div>
@@ -154,7 +154,7 @@
                      <input id="searchbox" type="text" name="searchbox" ng-model="searchterm" size="40">
 	                    <table class="table">
 	                        <tr class="searchresults" ng-repeat="result in searchresults.data" ng-click="selectGame(result.id)">
-	                            <td><img ng-src="{{result.image.icon_url}}" style="width: 40px; height: 40px;" title="{{result.name}}"></td>
+	                            <td><img ng-src="{{result.image.icon_url}}" err-src="images/unknown.png" style="width: 40px; height: 40px;" title="{{result.name}}"></td>
 	                            <td class="vert-align text-left">{{result.name}}</td>
 	                        </tr>
 	                        <tr ng-if="searchresults.status == 'loading'">
