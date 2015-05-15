@@ -433,7 +433,7 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 	});
 
 	var buildTimeline = function(){
-		for(var hour = 8; hour < 25; hour++){
+		for(var hour = 8; hour < 24; hour++){
 			$scope.times.push(hour+':00')
 			$scope.times.push(hour+':30')
 		}
