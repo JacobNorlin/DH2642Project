@@ -16,6 +16,8 @@ var rooms = {}
 
 exports.MAX_USERNAME_LENGTH = 30;
 exports.MAX_MESSAGE_LENGTH = 1000;
+var MAX_GAME_SEARCH_DISPLAY = 7; //Amount of games to show in the dropdown
+var MAX_API_SEARCH_GAMES = 20; //Amount of games to fetch with a search API call
 
 /**
  * Creates a new Room object and stores it in the rooms object
@@ -419,13 +421,15 @@ var Room = function() {
 	};
 
 	/**
-	 * Download data for a game from the API
+	 * Search for games in the API and display the 7 most recent games.
+	 * If a game does not have cover art, do not display it.
 	 * @param gameid The id of the game
 	 */
 	var gameSearchAPI = function(searchQuery, callback) {
 
-		var url = "http://www.giantbomb.com/api/games/?api_key=" + giantbomb.API_KEY + "&format=json&filter=name:" + searchQuery + ",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit=7";
-		console.log(url)
+		var url = "http://www.giantbomb.com/api/games/?api_key=" + giantbomb.API_KEY + "&format=json&filter=name:" + searchQuery +
+			",platforms:94&sort=original_release_date:desc&field_list=name,id,image&limit="+MAX_API_SEARCH_GAMES;
+
 		request(url, function(error, response, data) {
 			if (!error && response.statusCode == 200) {
 				data = JSON.parse(data);
@@ -435,18 +439,25 @@ var Room = function() {
 						data: []
 					});
 				} else {
+					var parsedResults = [];
 					for (var i = 0; i < data.results.length; i++) {
-						if (!data.results[i].image)
+						if(parsedResults.length >=  MAX_GAME_SEARCH_DISPLAY){
+							break;
+						}
+						else if (!data.results[i].image){
 							continue;
-
-						gamedata[data.results[i].id] = {
-							name: data.results[i].name,
-							image: data.results[i].image.icon_url
+						}
+						else {
+							gamedata[data.results[i].id] = {
+								name: data.results[i].name,
+								image: data.results[i].image.icon_url
+							}
+							parsedResults.push(data.results[i]);
 						}
 					}
 					callback({
 						status: 'ok',
-						data: data.results
+						data: parsedResults
 					});
 				}
 			} else if (error) {
@@ -465,11 +476,20 @@ var Room = function() {
 		request(url, function(error, response, data) {
 			if (!error && response.statusCode == 200) {
 				data = JSON.parse(data);
-				gamedata[data.results.id] = {
-					image: data.results.image.icon_url,
-					name: data.results.name,
-					numPlayers: numPlayers
-				};
+				if(data.results.image) {
+					gamedata[data.results.id] = {
+						image: data.results.image.icon_url,
+						name: data.results.name,
+						numPlayers: numPlayers
+					};
+				}
+				else{
+					gamedata[data.results.id] = {
+						image: "images/unknown.png",
+						name: data.results.name,
+						numPlayers: numPlayers
+					};
+				}
 				callback();
 			} else if (error) {
 				console.log("addGameByIdAPI failed (gameid: " + gameid + ")");
