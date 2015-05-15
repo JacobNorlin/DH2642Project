@@ -8,7 +8,8 @@ app.run(function(editableOptions) {
 $(document).keydown(function(e) {
 	// If ESCAPE is pressed, hide popups
 	if (e.keyCode == 27 && $('#addgamepopup').is(":visible")) {
-		$(".overlay, .popup").fadeToggle(100);
+		$(".overlay, .popup").fadeOut(100);
 		$('#chatinput').focus();
 	}
+
 });
