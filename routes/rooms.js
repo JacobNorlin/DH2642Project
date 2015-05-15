@@ -109,7 +109,7 @@ var Room = function() {
 		//Get a list of all unique game ids currently used
 		var allGames = getAllAddedGames();
 
-
+		
 
 		//Group each player into what numplayer group for each game so game:min2(user1..n), game2 etc...
 		var numberOfPlayersInEachGroupPerGame = _und.chain(allGames).

@@ -432,7 +432,20 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 			});
 	});
 
-	$scope.times = [ '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30', '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00' ];
+	var buildTimeline = function(){
+		for(var hour = 8; hour < 25; hour++){
+			$scope.times.push(hour+':00')
+			$scope.times.push(hour+':30')
+		}
+		for(var hour = 0; hour < 8; hour++){
+			$scope.times.push(hour+':00')
+			$scope.times.push(hour+':30')
+		}
+		console.log($scope.times)
+	}
+	$scope.times = new Array();
+	buildTimeline();
+	//$scope.times = [ '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30', '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00' ];
 
 });
 

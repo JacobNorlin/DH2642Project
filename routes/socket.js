@@ -66,7 +66,7 @@ module.exports = function (io, rooms) {
 			//Checks for matches every X seconds
 			setInterval(function() {
 				var currentTime = roundTime();
-		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify(currentTime), name)
+		    	var data = currentRoom.filterForUsersGames(currentRoom.getUsersToNotify('18:00'), name)
 		    	console.log("user", data)
 		    	if(data.length > 0){
 		    		socket.emit('notify:player', data);

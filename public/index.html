@@ -105,23 +105,24 @@
 				<div class="col-md-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">TIMELINE</div>
-
-						<table class="table" id="timeline">
-							<tr>
-								<th></th>
-								<th ng-repeat="time in times" ng-if="$index%2 == 0" colspan="2" class="text-center">{{time}}</th>
-							</tr>
-							<tr id="timeline-row">
-								<td class="no-select">{{name}}</td>
-								<td class="no-select"></td>
-								<td ng-repeat="time in times" ng-class="userdata[name].timeline[time] ? 'timeline-highlighted'+id%7 : ''" id="{{time}}"></td>
-							</tr>
-							<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
-								<td>{{user}}</td>
-								<td></td>
-                                <td ng-repeat="time in times" ng-class="userdata[user].timeline[time] ? 'timeline-highlighted'+data.id%7 : ''"></td>
-							</tr>
-						</table>
+						<div class="table-responsive">
+							<table class="table" id="timeline" style="overflow:auto">
+								<tr>
+									<th></th>
+									<th ng-repeat="time in times" ng-if="$index%2 == 0" colspan="2" class="text-center">{{time}}</th>
+								</tr>
+								<tr id="timeline-row">
+									<td class="no-select">{{name}}</td>
+									<td class="no-select"></td>
+									<td ng-repeat="time in times" ng-class="userdata[name].timeline[time] ? 'timeline-highlighted'+id%7 : ''" id="{{time}}"></td>
+								</tr>
+								<tr ng-repeat="(user, data) in userdata" ng-if="user != name">
+									<td>{{user}}</td>
+									<td></td>
+	                                <td ng-repeat="time in times" ng-class="userdata[user].timeline[time] ? 'timeline-highlighted'+data.id%7 : ''"></td>
+								</tr>
+							</table>
+						</div>
 					</div>
 				</div>
 			</div>
