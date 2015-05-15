@@ -465,11 +465,20 @@ var Room = function() {
 		request(url, function(error, response, data) {
 			if (!error && response.statusCode == 200) {
 				data = JSON.parse(data);
-				gamedata[data.results.id] = {
-					image: data.results.image.icon_url,
-					name: data.results.name,
-					numPlayers: numPlayers
-				};
+				if(data.results.image) {
+					gamedata[data.results.id] = {
+						image: data.results.image.icon_url,
+						name: data.results.name,
+						numPlayers: numPlayers
+					};
+				}
+				else{
+					gamedata[data.results.id] = {
+						image: "images/unknown.png",
+						name: data.results.name,
+						numPlayers: numPlayers
+					};
+				}
 				callback();
 			} else if (error) {
 				console.log("addGameByIdAPI failed (gameid: " + gameid + ")");
