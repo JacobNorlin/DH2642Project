@@ -137,6 +137,10 @@ app.controller('AppCtrl', function ($scope, $location, $cookieStore, $routeParam
 		saveToCookie();
 	})
 
+	socket.on('numplayer:change', function(data){
+		$scope.userdata = data;
+	})
+
 
 	/**
 	 *	Update the timeline with an added time for a user

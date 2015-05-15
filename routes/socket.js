@@ -206,7 +206,8 @@ module.exports = function (io, rooms) {
 			 * Store new number of min players
 			 */
 			socket.on('numplayer:change', function(data){
-				currentRoom.updateNumPlayers(data.name, data.userdata)
+				currentRoom.updateNumPlayers(data.name, data.userdata);
+				io.to(nsp).emit('numplayer:change', currentRoom.getUserData());
 			});
 
 			/**

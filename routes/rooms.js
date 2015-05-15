@@ -405,7 +405,8 @@ var Room = function() {
 	 * @param gameid The id of the game
 	 */
 	var copyGame = function(name, gameid) {
-		addGameToUser(name, gameid);
+		var game = getGame(gameid);
+		addGameToUser(name, gameid, game.numPlayers);
 	};
 
 	/**
